@@ -1,0 +1,55 @@
+{
+  "id": "./",
+  "name": "校园觅食",
+  "short_name": "校园觅食",
+  "description": "面向校园食堂场景的美食推荐、地图、营养、社区与校园服务应用。",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF9F3",
+  "theme_color": "#FF7A45",
+  "orientation": "any",
+  "categories": [
+    "food",
+    "lifestyle",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "随机干饭",
+      "short_name": "吃啥",
+      "url": "./index.html#random"
+    },
+    {
+      "name": "校园地图",
+      "short_name": "地图",
+      "url": "./index.html#map"
+    },
+    {
+      "name": "社区",
+      "short_name": "社区",
+      "url": "./index.html#community"
+    }
+  ]
+}

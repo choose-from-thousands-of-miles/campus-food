@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>校园觅食 · 校园美食推荐 · v1.7.0 PWA Beta</title>
+<style>
+  :root{
+    --bg:#FFF9F3;
+    --card:#FFFFFF;
+    --text:#2D2D2D;
+    --sub:#8B8178;
+    --line:#F0E5DA;
+    --main:#FF7A45;
+    --main2:#FF9C58;
+    --yellow:#FFC857;
+    --green:#55A86A;
+    --red:#E9665B;
+    --shadow:0 16px 44px rgba(107,72,46,.10);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",Arial,sans-serif;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(255,200,87,.16), transparent 27%),
+      radial-gradient(circle at 95% 6%, rgba(255,122,69,.12), transparent 22%),
+      var(--bg);
+    color:var(--text);
+  }
+  button,input,textarea,select{font:inherit}
+  button{cursor:pointer}
+  .app-shell{min-height:100vh;display:flex}
+  .sidebar{
+    width:248px;position:fixed;left:0;top:0;bottom:0;padding:28px 18px;
+    background:rgba(255,255,255,.88);backdrop-filter:blur(18px);
+    border-right:1px solid var(--line);z-index:50;
+  }
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 10px 24px}
+  .brand-logo{
+    width:48px;height:48px;border-radius:16px;
+    background:linear-gradient(145deg,var(--main2),var(--main));
+    display:grid;place-items:center;font-size:26px;box-shadow:0 10px 24px rgba(255,122,69,.25)
+  }
+  .brand strong{display:block;font-size:21px}
+  .brand small{color:var(--sub);font-size:11px}
+  .side-nav{display:flex;flex-direction:column;gap:8px}
+  .nav-btn{
+    border:0;background:transparent;border-radius:16px;padding:13px 14px;
+    display:flex;align-items:center;gap:12px;color:#74685D;text-align:left;font-weight:650;
+  }
+  .nav-btn:hover{background:#FFF2E7}
+  .nav-btn.active{background:linear-gradient(135deg,#FFF0E5,#FFE8D8);color:var(--main)}
+  .nav-ico{font-size:20px;width:25px;text-align:center}
+  .side-tip{
+    position:absolute;left:18px;right:18px;bottom:68px;padding:16px;border-radius:18px;
+    background:linear-gradient(145deg,#3C2B22,#65402D);color:#fff;box-shadow:var(--shadow)
+  }
+  .side-tip b{display:block;margin-bottom:7px}
+  .side-tip p{margin:0;color:rgba(255,255,255,.68);font-size:12px;line-height:1.65}
+  .side-version{
+    position:absolute;left:18px;right:18px;bottom:18px;text-align:center;
+    color:#B5A79B;font-size:11px;line-height:1.5;cursor:pointer;user-select:none;
+  }
+  .side-version:hover{color:var(--main)}
+  .beta-tag{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#FFF0E7;color:var(--main);font-size:9px;font-weight:800;vertical-align:1px}
+
+  /* 营养助手 */
+  .nutrition-banner{
+    margin-top:28px;background:linear-gradient(135deg,#F4FFF4,#FFF8EA);border:1px solid #DCEEDC;
+    border-radius:26px;padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+    box-shadow:0 8px 24px rgba(72,112,62,.06)
+  }
+  .nutrition-banner h3{margin:0 0 6px;font-size:19px}.nutrition-banner p{margin:0;color:var(--sub);font-size:13px;line-height:1.65}
+  .nutrition-mini{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .nutrition-mini .nmini{background:#fff;border:1px solid #E6EEE0;border-radius:14px;padding:9px 12px;min-width:92px;text-align:center}
+  .nutrition-mini b{display:block;font-size:16px}.nutrition-mini span{font-size:10px;color:var(--sub)}
+  .nutrition-overview{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+  .nutrition-hero{
+    background:linear-gradient(145deg,#355D43,#517C59);color:#fff;border-radius:28px;padding:24px;position:relative;overflow:hidden
+  }
+  .nutrition-hero:after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;right:-100px;top:-90px;background:rgba(255,255,255,.08)}
+  .nutrition-hero h2{margin:0 0 6px;font-size:27px}.nutrition-hero p{margin:0;color:rgba(255,255,255,.72);line-height:1.7}
+  .nutri-big{display:flex;align-items:flex-end;gap:8px;margin:28px 0 8px}.nutri-big b{font-size:48px;line-height:1}.nutri-big span{padding-bottom:6px;color:rgba(255,255,255,.72)}
+  .nutri-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+  .nutri-box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.12);border-radius:15px;padding:11px}
+  .nutri-box b{display:block;font-size:17px}.nutri-box span{font-size:10px;color:rgba(255,255,255,.65)}
+  .meal-list{display:grid;gap:10px}
+  .meal-row{display:flex;align-items:center;gap:12px;padding:12px;background:#FFF9F4;border-radius:15px}
+  .meal-row .meal-emoji{font-size:28px}.meal-row .grow{flex:1}.meal-row b{display:block;font-size:13px}.meal-row small{color:var(--sub)}
+  .nutri-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+  .nutri-card{background:#FAF8F5;border:1px solid var(--line);border-radius:16px;padding:13px;text-align:center}
+  .nutri-card .ni{font-size:22px}.nutri-card b{display:block;font-size:18px;margin:4px 0}.nutri-card span{font-size:10px;color:var(--sub)}
+  .nutri-feature{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+  .feature-tag{padding:7px 10px;border-radius:999px;background:#F0F8F0;color:#4A8055;font-size:11px;font-weight:750}
+  .feature-tag.warn{background:#FFF4E6;color:#B56A2B}
+  .nutrition-note{font-size:11px;color:var(--sub);line-height:1.65;background:#FFF9F3;border-radius:12px;padding:10px 12px;border:1px dashed var(--line)}
+  .version-log{display:grid;gap:14px}.version-item{padding:15px;border:1px solid var(--line);border-radius:17px;background:#FFFDFB}
+  .version-item h4{margin:0 0 6px}.version-item p{margin:0;color:var(--sub);font-size:13px;line-height:1.7}
+  .version-current{display:inline-block;padding:3px 7px;border-radius:999px;background:#EAF6EC;color:#4D8959;font-size:10px;font-weight:800;margin-left:6px}
+
+  .main{margin-left:248px;width:calc(100% - 248px);padding:28px 34px 80px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px}
+  .welcome h1{font-size:30px;margin:0 0 5px}
+  .welcome p{margin:0;color:var(--sub);font-size:14px}
+  .top-actions{display:flex;gap:10px;align-items:center}
+  .search-global{
+    background:#fff;border:1px solid var(--line);border-radius:15px;padding:11px 14px;
+    width:300px;box-shadow:0 6px 18px rgba(107,72,46,.05);outline:none;
+  }
+  .icon-btn,.ghost-btn,.primary-btn{
+    border:0;border-radius:14px;padding:11px 15px;transition:.2s;
+  }
+  .icon-btn{width:44px;height:44px;padding:0;background:#fff;border:1px solid var(--line)}
+  .ghost-btn{background:#FFF1E7;color:var(--main);font-weight:700}
+  .primary-btn{background:linear-gradient(135deg,var(--main2),var(--main));color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(255,122,69,.22)}
+  .primary-btn:hover,.ghost-btn:hover,.icon-btn:hover{transform:translateY(-1px)}
+  .page{display:none;animation:fade .2s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .hero{
+    min-height:280px;border-radius:30px;padding:34px;display:grid;grid-template-columns:1.3fr .7fr;
+    gap:20px;position:relative;overflow:hidden;color:#fff;
+    background:linear-gradient(120deg,#FF8C50 0%,#FF7044 55%,#F95E3B 100%);
+    box-shadow:0 24px 54px rgba(255,122,69,.2)
+  }
+  .hero:after{content:"";position:absolute;width:330px;height:330px;border-radius:50%;right:-100px;top:-110px;background:rgba(255,255,255,.12)}
+  .hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:130px;bottom:-150px;background:rgba(255,255,255,.09)}
+  .hero-copy{z-index:2;align-self:center}
+  .eyebrow{display:inline-block;padding:7px 11px;border-radius:99px;background:rgba(255,255,255,.15);font-size:12px;letter-spacing:.04em}
+  .hero h2{font-size:42px;line-height:1.15;margin:16px 0 12px}
+  .hero p{max-width:620px;line-height:1.8;color:rgba(255,255,255,.82);margin:0 0 20px}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .hero .primary-btn{background:#fff;color:var(--main);box-shadow:none}
+  .hero .ghost-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2)}
+  .hero-art{position:relative;z-index:2;display:grid;place-items:center}
+  .food-orbit{width:220px;height:220px;position:relative;display:grid;place-items:center}
+  .food-core{width:118px;height:118px;border-radius:36px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);display:grid;place-items:center;font-size:60px;backdrop-filter:blur(8px)}
+  .orb{position:absolute;width:54px;height:54px;border-radius:18px;background:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 12px 28px rgba(94,35,19,.16)}
+  .orb.o1{left:3px;top:25px}.orb.o2{right:3px;top:15px}.orb.o3{left:20px;bottom:2px}.orb.o4{right:10px;bottom:12px}
+  .section{margin-top:28px}
+  .section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:14px}
+  .section-head h3{margin:0;font-size:20px}
+  .section-head p{margin:4px 0 0;color:var(--sub);font-size:13px}
+  .link-btn{border:0;background:transparent;color:var(--main);font-weight:750}
+  .canteen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .canteen-card{
+    background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 22px rgba(107,72,46,.05);
+    transition:.2s;cursor:pointer
+  }
+  .canteen-card:hover,.dish-card:hover,.rank-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .canteen-icon{height:92px;border-radius:17px;background:linear-gradient(140deg,#FFF2DE,#FFE5D4);display:grid;place-items:center;font-size:44px;margin-bottom:13px}
+  .canteen-card b{font-size:16px}
+  .canteen-card span{display:block;color:var(--sub);font-size:12px;margin-top:5px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .chip{font-size:11px;padding:5px 8px;border-radius:99px;background:#FFF3EA;color:#C96034}
+  .dish-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .dish-card{
+    background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden;transition:.2s;cursor:pointer;position:relative
+  }
+  .dish-cover{
+    height:148px;background:linear-gradient(150deg,#FFE5D4,#FFF6E8);display:grid;place-items:center;font-size:65px;position:relative
+  }
+  .dish-badge{position:absolute;left:12px;top:12px;background:#fff;padding:5px 8px;border-radius:99px;font-size:11px;font-weight:800;color:var(--main)}
+  .fav-mini{position:absolute;right:11px;top:10px;width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.9);font-size:17px}
+  .dish-body{padding:14px}
+  .dish-title{display:flex;justify-content:space-between;gap:10px;align-items:start}
+  .dish-title b{font-size:16px}
+  .price{color:var(--main);font-weight:850;white-space:nowrap}
+  .meta{display:flex;justify-content:space-between;margin-top:8px;color:var(--sub);font-size:12px}
+  .stars{color:#FFAE3D}
+  .home-split{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:28px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 8px 24px rgba(107,72,46,.05)}
+  .mini-rank{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .mini-rank:last-child{border-bottom:0}
+  .rank-no{width:31px;height:31px;border-radius:11px;background:#FFF1E5;display:grid;place-items:center;color:var(--main);font-weight:900}
+  .mini-rank .grow{flex:1}.mini-rank b{display:block;font-size:14px}.mini-rank small{color:var(--sub)}
+  .community-mini{display:grid;gap:10px}
+  .post-mini{background:#FFF9F4;border-radius:16px;padding:13px;display:flex;gap:12px}
+  .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(145deg,#FFE5D0,#FFC9AA);display:grid;place-items:center;flex:none}
+  .post-mini b{font-size:13px}.post-mini p{margin:4px 0 0;color:#6D6259;font-size:12px;line-height:1.55}
+  .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .pill{
+    border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;color:#75695D
+  }
+  .pill.active{background:#FFF0E7;color:var(--main);border-color:#FFD4BF;font-weight:800}
+  .rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .rank-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;transition:.2s;cursor:pointer}
+  .rank-top{display:flex;align-items:center;justify-content:space-between}
+  .rank-num{font-size:24px;font-weight:950;color:var(--main)}
+  .rank-card .emoji{font-size:54px;text-align:center;padding:16px 0 8px}
+  .rank-card h4{font-size:17px;margin:6px 0}
+  .rank-card p{margin:0;color:var(--sub);font-size:12px;line-height:1.6}
+  .random-wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}
+  .random-form{background:#fff;border:1px solid var(--line);border-radius:26px;padding:22px}
+  .form-row{margin-bottom:18px}
+  .form-row label{display:block;font-size:13px;font-weight:800;margin-bottom:9px}
+  .option-group{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 12px;color:#74695E
+  }
+  .opt.active{background:#FFF0E6;border-color:#FFD1BA;color:var(--main);font-weight:800}
+  .random-stage{
+    min-height:480px;border-radius:28px;padding:26px;display:grid;place-items:center;
+    background:linear-gradient(145deg,#3B2D24,#674332);color:#fff;position:relative;overflow:hidden
+  }
+  .random-stage:before{content:"";position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(255,180,120,.09);top:-130px;right:-90px}
+  .rand-empty{text-align:center;z-index:2}.rand-empty .big{font-size:86px}.rand-empty p{color:rgba(255,255,255,.7)}
+  .result-card{
+    display:none;width:min(380px,100%);background:#fff;color:var(--text);border-radius:28px;padding:20px;z-index:2;box-shadow:0 24px 70px rgba(0,0,0,.18)
+  }
+  .result-card.show{display:block;animation:pop .28s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.94) rotate(-1deg)}to{opacity:1;transform:none}}
+  .result-emoji{height:170px;border-radius:22px;background:linear-gradient(145deg,#FFE7D8,#FFF7EC);display:grid;place-items:center;font-size:92px}
+  .result-card h3{font-size:26px;margin:14px 0 4px}
+  .result-card p{color:var(--sub);margin:0 0 14px;line-height:1.65}
+  .result-actions{display:flex;gap:10px}
+  .community-layout{display:grid;grid-template-columns:1fr 340px;gap:18px}
+  .feed{display:grid;gap:14px}
+  .post-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:18px}
+  .post-head{display:flex;align-items:center;gap:11px}
+  .post-head .info{flex:1}.post-head b{display:block}.post-head small{color:var(--sub)}
+  .post-card h4{font-size:18px;margin:15px 0 7px}.post-card p{margin:0;color:#655B53;line-height:1.75}
+  .post-photo{margin-top:14px;border-radius:18px;height:210px;background:linear-gradient(150deg,#FFE7D2,#FFF7EA);display:grid;place-items:center;font-size:80px}
+  .post-footer{display:flex;gap:18px;margin-top:14px;color:var(--sub);font-size:13px}
+  .side-box{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px}
+  .side-box h4{margin:0 0 13px}
+  .profile-hero{background:linear-gradient(130deg,#FFF0E5,#FFE0CB);border-radius:28px;padding:24px;display:flex;align-items:center;gap:17px}
+  .profile-avatar{width:78px;height:78px;border-radius:26px;background:#fff;display:grid;place-items:center;font-size:38px}
+  .profile-hero h2{margin:0 0 5px}.profile-hero p{margin:0;color:var(--sub)}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  .stat-box{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center}
+  .stat-box b{display:block;font-size:23px}.stat-box span{color:var(--sub);font-size:12px}
+  .mine-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .pref-list{display:flex;gap:8px;flex-wrap:wrap}
+  .fav-list{display:grid;gap:10px}
+  .fav-row{display:flex;align-items:center;gap:11px;padding:10px;border-radius:14px;background:#FFF9F4}
+  .fav-row .emoji{font-size:28px}
+  .fav-row .grow{flex:1}.fav-row b{display:block}.fav-row small{color:var(--sub)}
+  .empty-note{color:var(--sub);font-size:13px;padding:10px 0}
+  .mobile-nav{display:none}
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:#2E251F;color:#fff;
+    padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:100
+  }
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .modal{
+    position:fixed;inset:0;background:rgba(45,33,24,.45);display:none;align-items:center;justify-content:center;
+    padding:22px;z-index:90;backdrop-filter:blur(4px)
+  }
+  .modal.show{display:flex}
+  .modal-card{width:min(720px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:28px;padding:22px;box-shadow:0 28px 80px rgba(0,0,0,.2)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .modal-head h3{margin:0;font-size:22px}.close-btn{border:0;width:38px;height:38px;border-radius:50%;background:#F7EFE8;font-size:20px}
+  .detail-hero{height:220px;border-radius:22px;background:linear-gradient(145deg,#FFE5D2,#FFF8EF);display:grid;place-items:center;font-size:100px}
+  .detail-info{display:flex;justify-content:space-between;gap:18px;align-items:start;margin-top:16px}
+  .detail-info h2{margin:0 0 6px}.detail-info p{color:var(--sub);margin:0;line-height:1.7}
+  .review-list{margin-top:18px}.review{padding:12px 0;border-top:1px solid var(--line)}
+  .review b{font-size:13px}.review p{margin:5px 0 0;color:#6D6259;font-size:13px}
+  .rating-row{display:flex;gap:5px;font-size:23px;margin:10px 0}
+  .star-rate{cursor:pointer;color:#D7CEC7}.star-rate.on{color:#FFAD38}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px}
+  .field input,.field textarea{
+    width:100%;border:1px solid var(--line);background:#FFFCFA;border-radius:14px;padding:12px;outline:none
+  }
+  .field textarea{min-height:100px;resize:vertical}
+  .canteen-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .stall-box{padding:14px;border:1px solid var(--line);border-radius:16px}
+  .stall-box b{display:block}.stall-box span{color:var(--sub);font-size:12px}
+  @media(max-width:1180px){
+    .canteen-grid,.dish-grid{grid-template-columns:repeat(2,1fr)}
+    .community-layout{grid-template-columns:1fr}
+    .community-aside{display:none}
+  }
+  @media(max-width:860px){
+    .sidebar{display:none}.main{margin-left:0;width:100%;padding:18px 16px 92px}
+    .topbar{align-items:flex-start}.top-actions{display:none}
+    .welcome h1{font-size:25px}
+    .hero{grid-template-columns:1fr;padding:25px}.hero h2{font-size:34px}.hero-art{display:none}
+    .home-split,.random-wrap,.mine-grid,.nutrition-overview{grid-template-columns:1fr}
+    .nutrition-banner{grid-template-columns:1fr}
+    .nutrition-mini{justify-content:flex-start}
+    .rank-grid{grid-template-columns:1fr}
+    .mobile-nav{
+      display:flex;position:fixed;left:10px;right:10px;bottom:10px;height:68px;background:rgba(255,255,255,.94);
+      border:1px solid var(--line);border-radius:22px;z-index:70;box-shadow:0 14px 40px rgba(76,50,33,.14);backdrop-filter:blur(16px)
+    }
+    .mnav{flex:1;border:0;background:transparent;color:#91867D;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+    .mnav span{font-size:21px}.mnav.active{color:var(--main);font-weight:800}
+    .stats-row{grid-template-columns:repeat(2,1fr)}
+    .nutri-card-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:560px){
+    .canteen-grid,.dish-grid,.canteen-list{grid-template-columns:1fr}
+    .hero{min-height:auto}.hero h2{font-size:29px}
+    .hero-actions{flex-direction:column}.hero-actions button{width:100%}
+    .random-stage{min-height:390px}
+    .detail-info{display:block}
+  }
+
+  /* v1.2.0 · 食堂状态 / 多维评价 / 校园饭堂账本 */
+  .status-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:10.5px;font-weight:800}
+  .status-pill.open{background:#EAF6EC;color:#4F8B5B}
+  .status-pill.closed{background:#F1ECE8;color:#8D8179}
+  .status-pill.warn{background:#FFF0DF;color:#B66A29}
+  .crowd-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:currentColor}
+  .location-line{display:flex;gap:7px;align-items:flex-start;margin-top:7px;color:var(--sub);font-size:11.5px;line-height:1.55}
+  .live-strip{
+    background:linear-gradient(135deg,#FFF8EF,#FFF1E4);border:1px solid #F5DED0;border-radius:18px;
+    padding:13px 14px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap
+  }
+  .live-strip b{font-size:13px}.live-strip span{font-size:11px;color:var(--sub)}
+  .report-group{display:flex;gap:8px;flex-wrap:wrap}
+  .report-btn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:8px 10px;font-size:11px;color:#6F645B}
+  .report-btn:hover{border-color:#FFCEB7;color:var(--main);background:#FFF8F3}
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .metric-card{background:#FFF9F4;border:1px solid var(--line);border-radius:16px;padding:12px}
+  .metric-card span{display:block;color:var(--sub);font-size:10px;margin-bottom:5px}
+  .metric-card b{font-size:18px}.metric-card em{font-style:normal;color:#FFAD38;font-size:11px;margin-left:4px}
+  .metric-bar{height:6px;border-radius:999px;background:#F1E8E0;margin-top:8px;overflow:hidden}
+  .metric-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFB36E,#FF7A45)}
+  .portion-badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#F0F8F0;color:#4F8058;font-size:10px;font-weight:800}
+  .availability{position:absolute;right:12px;bottom:10px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.92);font-size:10px;font-weight:800}
+  .availability.low{color:#B66A29}.availability.sold{color:#9A8F87;background:rgba(246,242,239,.94)}
+  .expense-banner{
+    margin-top:18px;background:linear-gradient(135deg,#FFF8EC,#FFF2E2);border:1px solid #F1DFC8;
+    border-radius:24px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center
+  }
+  .expense-banner h3{margin:0 0 5px}.expense-banner p{margin:0;color:var(--sub);font-size:12px;line-height:1.6}
+  .expense-big{text-align:right}.expense-big b{display:block;font-size:29px;color:#C76A2E}.expense-big span{font-size:10px;color:var(--sub)}
+  .expense-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .expense-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px}
+  .expense-box b{display:block;font-size:18px}.expense-box span{font-size:10px;color:var(--sub)}
+  .expense-list{display:grid;gap:8px;margin-top:12px;max-height:280px;overflow:auto}
+  .expense-row{display:flex;align-items:center;gap:11px;padding:10px;background:#FFF9F4;border-radius:13px}
+  .expense-row .grow{flex:1}.expense-row b{display:block;font-size:12.5px}.expense-row small{color:var(--sub);font-size:10.5px}
+  .expense-row .amt{font-weight:850;color:#C76A2E}
+  .rate-editor{padding:13px;border-radius:15px;background:#FFFCF9;border:1px dashed var(--line);margin-top:12px}
+  .rate-line{display:flex;align-items:center;gap:8px;margin-top:8px}.rate-line>span{width:48px;font-size:11px;color:var(--sub)}
+  .rate-dot{width:29px;height:29px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:11px;color:#877A70}
+  .rate-dot.on{background:#FFF0E5;color:var(--main);border-color:#FFD0B8;font-weight:800}
+  .tiny-note{font-size:10px;color:var(--sub);line-height:1.55}
+  @media(max-width:860px){
+    .expense-banner{grid-template-columns:1fr}
+    .expense-big{text-align:left}
+    .expense-grid{grid-template-columns:repeat(2,1fr)}
+  }
+
+
+  /* v1.3.0 · 地图 / 忌口 / 账号与校园服务原型 */
+  .service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .service-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:17px;cursor:pointer;transition:.2s}
+  .service-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .service-card .sico{width:44px;height:44px;border-radius:14px;background:#FFF1E7;display:grid;place-items:center;font-size:23px;margin-bottom:11px}
+  .service-card b{display:block;font-size:14px}.service-card span{display:block;color:var(--sub);font-size:11px;line-height:1.6;margin-top:5px}
+  .diet-block{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px}
+  .diet-block h3{margin:0 0 5px}.diet-block p{margin:0 0 14px;color:var(--sub);font-size:12px;line-height:1.65}
+  .diet-tags{display:flex;gap:8px;flex-wrap:wrap}
+  .diet-tag{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;color:#70645A}
+  .diet-tag.on{background:#FFF0E7;border-color:#FFD0B8;color:var(--main);font-weight:800}
+  .diet-tag.strict.on{background:#FFF0EE;border-color:#F3B7B2;color:#C9534B}
+  .danger-note{margin-top:12px;border:1px dashed #E7C4BF;background:#FFF8F7;color:#8D5A54;border-radius:13px;padding:10px 12px;font-size:10.5px;line-height:1.65}
+
+  .campus-map-wrap{display:grid;grid-template-columns:1fr 300px;gap:16px}
+  .campus-map{position:relative;min-height:620px;border-radius:28px;overflow:hidden;border:1px solid #DCE9D6;background:
+    radial-gradient(circle at 25% 22%,rgba(124,170,106,.18),transparent 22%),
+    radial-gradient(circle at 78% 74%,rgba(89,150,111,.14),transparent 25%),
+    linear-gradient(160deg,#EEF6E9,#F8F5E8)}
+  .campus-map svg{width:100%;height:100%;min-height:620px;display:block}
+  .map-pin{position:absolute;transform:translate(-50%,-100%);border:0;background:transparent;z-index:5;text-align:center}
+  .map-pin .bubble{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid rgba(80,75,62,.10);box-shadow:0 8px 22px rgba(62,76,51,.12);padding:7px 9px;border-radius:12px;white-space:nowrap;font-size:11px;font-weight:800}
+  .map-pin .point{width:12px;height:12px;background:var(--main);border:3px solid #fff;border-radius:50%;margin:2px auto 0;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+  .map-pin.food .bubble{color:#B9512D}.map-pin.dorm .bubble{color:#507B53}.map-pin.landmark .bubble{color:#536B83}
+  .map-side{display:grid;gap:12px;align-content:start}
+  .map-info{background:#fff;border:1px solid var(--line);border-radius:20px;padding:17px}
+  .map-info h3,.map-info h4{margin:0 0 8px}.map-info p{margin:0;color:var(--sub);font-size:11.5px;line-height:1.7}
+  .route-list{display:grid;gap:8px}.route-step{display:flex;gap:9px;align-items:flex-start;padding:9px;background:#FFF9F4;border-radius:12px;font-size:11px;line-height:1.55}
+  .map-legend{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.map-legend span{font-size:10px;padding:5px 7px;background:#F7F4EF;border-radius:999px}
+
+  .settings-list{display:grid;gap:10px}
+  .setting-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:#fff}
+  .setting-row .grow{flex:1}.setting-row b{display:block;font-size:13px}.setting-row small{color:var(--sub);font-size:10.5px}
+  .switch{width:46px;height:26px;border-radius:999px;background:#DDD2C8;border:0;padding:3px;transition:.2s}
+  .switch i{display:block;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.14)}
+  .switch.on{background:var(--main)}.switch.on i{transform:translateX(20px)}
+  .avatar-editor{display:flex;align-items:center;gap:15px;padding:14px;background:#FFF9F4;border-radius:16px;margin-bottom:14px}
+  .avatar-preview{width:74px;height:74px;border-radius:24px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:37px;overflow:hidden}
+  .avatar-preview img{width:100%;height:100%;object-fit:cover}
+  .account-shell{border:1px solid var(--line);border-radius:18px;padding:16px;background:#FFFDFC}
+  .shell-tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#F1ECE8;color:#8A7D74;font-size:10px;font-weight:800}
+  .shell-tag.ready{background:#EBF6EC;color:#4F8057}
+
+  .campus-code{background:linear-gradient(145deg,#3F2D24,#69432E);color:#fff;border-radius:25px;padding:22px;position:relative;overflow:hidden}
+  .campus-code:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-100px;top:-100px;background:rgba(255,255,255,.07)}
+  .balance{font-size:36px;font-weight:900;margin:10px 0 3px}.code-sub{color:rgba(255,255,255,.65);font-size:11px}
+  .qrbox{width:190px;height:190px;margin:18px auto 10px;background:#fff;border-radius:20px;padding:14px;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);gap:2px}
+  .qrbox i{background:#fff}.qrbox i.on{background:#29211D;border-radius:1px}
+  .payment-list{display:grid;gap:8px;margin-top:12px}.pay-item{display:flex;gap:10px;align-items:center;padding:11px;background:#FFF9F4;border-radius:13px}
+  .pay-item .grow{flex:1}.pay-item b{display:block;font-size:12.5px}.pay-item small{color:var(--sub);font-size:10px}.pay-item .amt{font-weight:850}
+
+  .chat-layout{display:grid;grid-template-columns:300px 1fr;gap:14px;min-height:600px}
+  .chat-list{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .chat-person{display:flex;gap:10px;padding:13px;border-bottom:1px solid var(--line);cursor:pointer}
+  .chat-person.active{background:#FFF5EE}.chat-person .grow{flex:1;min-width:0}.chat-person b{display:block;font-size:12.5px}.chat-person small{display:block;color:var(--sub);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chat-pane{background:#fff;border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;overflow:hidden}
+  .chat-head{padding:13px 15px;border-bottom:1px solid var(--line);font-weight:800}
+  .chat-messages{flex:1;padding:16px;overflow:auto;background:#FFFCFA;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:70%;padding:9px 11px;border-radius:14px;font-size:12px;line-height:1.6;background:#F2ECE7}
+  .msg.me{align-self:flex-end;background:#FFF0E6;color:#7A452E}
+  .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}.chat-input input{flex:1;border:1px solid var(--line);border-radius:13px;padding:10px;outline:none}
+
+  .runner-hero{background:linear-gradient(135deg,#3B3029,#6B4C38);color:#fff;border-radius:28px;padding:26px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:center}
+  .runner-hero h2{margin:0 0 8px;font-size:28px}.runner-hero p{margin:0;color:rgba(255,255,255,.68);line-height:1.75}
+  .runner-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:17px}
+  .price-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .price-plan{border:1px solid var(--line);border-radius:20px;padding:17px;background:#fff}
+  .price-plan.member{background:linear-gradient(150deg,#FFF7DE,#FFF0C8);border-color:#EFD291}
+  .price-plan h3{margin:0 0 8px}.price-plan .bigp{font-size:30px;font-weight:900;color:#B87925}.price-plan ul{padding-left:18px;color:#665B53;font-size:11px;line-height:1.8}
+  .order-builder{display:grid;grid-template-columns:1fr 1fr;gap:13px}.order-summary{background:#FFF9F4;border-radius:17px;padding:14px}
+  .fee-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line);font-size:11px}.fee-row:last-child{border-bottom:0}
+  .port-card{border:1px dashed #D9CFC7;border-radius:17px;padding:14px;background:#FCFAF8}.port-card b{display:block;margin-bottom:5px}.port-card p{margin:0;color:var(--sub);font-size:11px;line-height:1.7}
+  .mini-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .mini-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;color:#74685E}
+  .mini-tab.on{background:#FFF0E7;color:var(--main);font-weight:800;border-color:#FFD0B8}
+  .service-section{display:none}.service-section.active{display:block}
+
+  @media(max-width:1100px){
+    .service-grid{grid-template-columns:repeat(2,1fr)}
+    .campus-map-wrap,.chat-layout{grid-template-columns:1fr}
+    .map-side{grid-template-columns:repeat(2,1fr)}
+    .chat-list{max-height:260px;overflow:auto}
+  }
+  @media(max-width:680px){
+    .service-grid,.order-builder,.price-compare{grid-template-columns:1fr}
+    .map-side{grid-template-columns:1fr}
+    .campus-map,.campus-map svg{min-height:520px}
+    .runner-hero{grid-template-columns:1fr}
+  }
+
+
+  /* v1.4.0 · 社区强化 + 校园公告中心 */
+  .side-nav{max-height:calc(100vh - 255px);overflow:auto;padding-right:3px;scrollbar-width:none}
+  .side-nav::-webkit-scrollbar{display:none}
+  .nav-group-title{font-size:9.5px;letter-spacing:.16em;color:#B6A99E;padding:11px 14px 5px;font-weight:800}
+  .nav-count{margin-left:auto;min-width:18px;height:18px;border-radius:999px;background:#E9665B;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;font-size:9px;font-weight:900}
+  .announce-strip{
+    margin-bottom:16px;background:linear-gradient(135deg,#FFF8EC,#FFF1E4);border:1px solid #F2DCC8;
+    border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.2s
+  }
+  .announce-strip:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(107,72,46,.07)}
+  .announce-strip .aico{width:32px;height:32px;border-radius:11px;background:#fff;display:grid;place-items:center;flex:none}
+  .announce-strip .grow{flex:1;min-width:0}.announce-strip b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .announce-strip small{display:block;color:var(--sub);font-size:10px;margin-top:2px}
+  .announce-strip .more{color:var(--main);font-size:11px;font-weight:800}
+  .community-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .community-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-size:11px;color:#756A61}
+  .community-tab.active{background:#FFF0E7;color:var(--main);border-color:#FFD0B8;font-weight:850}
+  .announce-layout{display:grid;grid-template-columns:1fr 320px;gap:18px}
+  .announce-list{display:grid;gap:12px}
+  .announce-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:17px;cursor:pointer;transition:.2s;position:relative}
+  .announce-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .announce-card.unread:before{content:"";position:absolute;left:8px;top:22px;width:7px;height:7px;border-radius:50%;background:#E9665B}
+  .announce-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .announce-source{font-size:10px;color:var(--sub);margin-left:auto}
+  .level-badge{font-size:9.5px;font-weight:850;padding:4px 7px;border-radius:999px}
+  .level-badge.normal{background:#F4F1ED;color:#766B63}
+  .level-badge.important{background:#FFF2DC;color:#A96A22}
+  .level-badge.urgent{background:#FFF0EE;color:#C84F48}
+  .category-badge{font-size:9.5px;padding:4px 7px;border-radius:999px;background:#EEF4F8;color:#5A7181}
+  .announce-card h3{margin:0 0 7px;font-size:16px}.announce-card p{margin:0;color:#6B6058;font-size:12px;line-height:1.7}
+  .announce-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:11px;color:var(--sub);font-size:10px}
+  .announce-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .announce-filter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:10.5px;color:#74685F}
+  .announce-filter.on{background:#FFF0E7;color:var(--main);border-color:#FFD0B8;font-weight:850}
+  .announce-aside{display:grid;gap:12px;align-content:start}
+  .announce-stat{background:#fff;border:1px solid var(--line);border-radius:20px;padding:17px}
+  .announce-stat h4{margin:0 0 10px}
+  .announce-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .announce-stat-box{background:#FFF9F4;border-radius:13px;padding:11px;text-align:center}
+  .announce-stat-box b{display:block;font-size:20px}.announce-stat-box span{font-size:9.5px;color:var(--sub)}
+  .announce-link-list{display:grid;gap:8px}
+  .announce-link{padding:10px;border-radius:12px;background:#FFF9F4;font-size:11px;line-height:1.55;cursor:pointer}
+  .announce-detail-head{padding:15px;border-radius:18px;background:#FFF9F4;margin-bottom:15px}
+  .announce-detail-head h2{margin:7px 0 5px;font-size:22px}.announce-detail-head p{margin:0;color:var(--sub);font-size:11px}
+  .announce-body{font-size:13px;line-height:1.9;color:#5E554E;white-space:pre-line}
+  .announce-action{margin-top:16px;display:flex;gap:9px;flex-wrap:wrap}
+  .notice-inline{margin-top:10px;padding:9px 11px;border-radius:12px;background:#FFF5E8;color:#A15F2C;font-size:10.5px;line-height:1.6;border:1px solid #F2DDC5}
+  @media(max-width:1050px){.announce-layout{grid-template-columns:1fr}.announce-aside{grid-template-columns:1fr 1fr}}
+  @media(max-width:680px){.announce-aside{grid-template-columns:1fr}.announce-strip .more{display:none}}
+
+
+  /* v1.5.0 · 社区合并私聊 + 独立设置中心 */
+  .community-view{display:none}
+  .community-view.active{display:block}
+  .settings-page-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .settings-panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px}
+  .settings-panel.full{grid-column:1/-1}
+  .settings-panel h3{margin:0 0 5px;font-size:17px}
+  .settings-panel>p{margin:0 0 14px;color:var(--sub);font-size:11.5px;line-height:1.65}
+  .settings-action{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .settings-action:last-child{border-bottom:0}
+  .settings-action .ico{width:36px;height:36px;border-radius:12px;background:#FFF5ED;display:grid;place-items:center;flex:none}
+  .settings-action .grow{flex:1}
+  .settings-action b{display:block;font-size:12.5px}
+  .settings-action small{display:block;color:var(--sub);font-size:10px;margin-top:2px}
+  .settings-link{border:0;background:transparent;color:var(--main);font-size:11px;font-weight:800}
+  .settings-status{font-size:10px;padding:4px 7px;border-radius:999px;background:#F1ECE8;color:#83776F}
+  .settings-status.good{background:#EBF6EC;color:#4F8057}
+  @media(max-width:820px){.settings-page-grid{grid-template-columns:1fr}.settings-panel.full{grid-column:auto}}
+
+
+  /* v1.6.0+ · Mobile-first adaptation */
+  .mobile-only{display:none}
+  @media (max-width: 900px){
+    body{background:linear-gradient(180deg,#FFF9F5 0%,#FFFDFB 100%)}
+    .app{grid-template-columns:1fr;min-height:100vh}
+    .sidebar{display:none}
+    .content{padding:14px 14px 92px}
+    .topbar{position:sticky;top:0;z-index:18;margin:-14px -14px 14px;background:rgba(255,250,246,.92);backdrop-filter:blur(10px);padding:14px;border-bottom:1px solid var(--line)}
+    .page-title h1{font-size:22px;line-height:1.25}
+    .page-title p{font-size:11px;line-height:1.6}
+    .searchbox{display:none}
+    .hero{padding:18px;border-radius:22px}
+    .hero h2{font-size:26px;line-height:1.18}
+    .hero p{font-size:12px;line-height:1.75}
+    .hero-actions,.hero-stats,.stats-row,.home-split,.service-grid,.price-compare,.order-builder,.campus-map-wrap,.settings-page-grid,.announce-layout,.chat-layout{grid-template-columns:1fr !important}
+    .hero-actions{display:grid;gap:10px}
+    .hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hero .ghost-btn,.hero .primary-btn{width:100%}
+    .panel,.side-box,.community-post,.dish-card,.canteen-card,.meal-card,.record-card,.settings-panel,.announce-card,.service-card,.price-plan,.order-summary,.map-info,.diet-block{border-radius:18px}
+    .panel{padding:16px}
+    .section-head{display:block}
+    .section-head h3{font-size:18px}
+    .section-head p{font-size:11px}
+    .canteen-grid,.dish-grid,.recommend-grid,.feed,.payment-list,.announce-list{display:grid;gap:12px}
+    .canteen-grid,.dish-grid,.recommend-grid,.service-grid{grid-template-columns:1fr !important}
+    .canteen-card,.dish-card,.recommend-card{padding:14px}
+    .location-line,.meta-line,.tiny-note,.nutrition-note,.danger-note{font-size:10px}
+    .chips{gap:6px}
+    .chip{padding:5px 8px;font-size:10px}
+    .filters,.rank-filters,.mini-tabs,.community-tabs,.announce-filters{overflow:auto;flex-wrap:nowrap;padding-bottom:4px;scrollbar-width:none}
+    .filters::-webkit-scrollbar,.rank-filters::-webkit-scrollbar,.mini-tabs::-webkit-scrollbar,.community-tabs::-webkit-scrollbar,.announce-filters::-webkit-scrollbar{display:none}
+    .pill,.mini-tab,.community-tab,.announce-filter{white-space:nowrap;flex:none}
+    .dish-hero{grid-template-columns:1fr;gap:14px}
+    .dish-hero img{height:190px}
+    .detail-grid,.nutrition-grid,.comment-list,.expense-cards,.announce-stat-grid,.route-list{grid-template-columns:1fr !important}
+    .detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .detail-actions button{width:100%}
+    .detail-tabs{overflow:auto;flex-wrap:nowrap}
+    .campus-map{min-height:420px;border-radius:20px}
+    .campus-map svg{min-height:420px}
+    .map-pin .bubble{font-size:10px;padding:6px 8px}
+    .chat-list{max-height:240px;overflow:auto}
+    .chat-pane{min-height:440px}
+    .chat-messages{min-height:280px}
+    .msg{max-width:82%;font-size:11.5px}
+    .community-tabs{margin-bottom:12px}
+    .mobile-nav{display:grid !important;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,251,247,.97);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+    .mnav{background:none;border:0;display:grid;justify-items:center;gap:4px;font-size:10px;color:#877A72;padding:4px 0}
+    .mnav span{font-size:18px;line-height:1}
+    .mnav.active{color:var(--main);font-weight:800}
+    .modal{padding:0;align-items:flex-end}
+    .modal-card{width:100%;max-width:none;max-height:92vh;border-radius:24px 24px 0 0;padding:18px;overflow:auto}
+    .modal-head{position:sticky;top:-18px;background:#fff;padding-top:2px;z-index:2}
+    .avatar-editor{display:grid;grid-template-columns:74px 1fr;align-items:center}
+    .campus-code{padding:18px;border-radius:20px}
+    .balance{font-size:30px}
+    .qrbox{width:170px;height:170px}
+    .mobile-only{display:block}
+  }
+  @media (max-width: 520px){
+    .content{padding:12px 12px 90px}
+    .topbar{margin:-12px -12px 12px;padding:12px}
+    .page-title h1{font-size:20px}
+    .hero{padding:16px}
+    .hero h2{font-size:24px}
+    .hero-stats{grid-template-columns:1fr 1fr}
+    .hero-stat b{font-size:18px}
+    .detail-actions{grid-template-columns:1fr}
+    .phone-inline-two,.expense-cards,.announce-stat-grid{grid-template-columns:1fr !important}
+    .campus-map{min-height:360px}
+    .campus-map svg{min-height:360px}
+    .map-pin .bubble{font-size:9px;padding:5px 7px}
+    .topbar-actions{display:none}
+  }
+
+
+  /* v1.7.0 · PWA installation */
+  .pwa-install-bar{position:fixed;right:18px;bottom:18px;z-index:80;display:none;align-items:center;gap:10px;width:min(390px,calc(100vw - 28px));background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 18px 44px rgba(75,47,30,.18);backdrop-filter:blur(12px)}
+  .pwa-install-bar.show{display:flex}
+  .pwa-install-bar .pwa-icon{width:44px;height:44px;border-radius:13px;background:#FFF1E8;display:grid;place-items:center;font-size:22px;flex:none}
+  .pwa-install-bar .grow{flex:1;min-width:0}.pwa-install-bar b{display:block;font-size:12.5px}.pwa-install-bar small{display:block;color:var(--sub);font-size:9.8px;line-height:1.5;margin-top:2px}
+  .pwa-install-bar button{border:0;border-radius:10px;padding:8px 10px;font-size:10.5px;font-weight:800;cursor:pointer}.pwa-install{background:var(--main);color:#fff}.pwa-dismiss{background:#F4EFEB;color:#76685F}
+  .offline-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:90;background:#2E302F;color:#fff;padding:9px 13px;border-radius:999px;font-size:10.5px;display:none}.offline-toast.show{display:block}
+  @media(max-width:900px){.pwa-install-bar{left:14px;right:14px;bottom:82px;width:auto}}
+
+</style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#FF7A45">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="校园觅食">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🍜</div>
+      <div><strong>校园觅食</strong><small>Campus Food Finder</small></div>
+    </div>
+    <nav class="side-nav">
+      <div class="nav-group-title">发现 DISCOVER</div>
+      <button class="nav-btn active" data-page="home"><span class="nav-ico">🏠</span>首页</button>
+      <button class="nav-btn" data-page="rank"><span class="nav-ico">🏆</span>校园榜单</button>
+      <button class="nav-btn" data-page="random"><span class="nav-ico">🎲</span>随机干饭</button>
+      <button class="nav-btn" data-page="map"><span class="nav-ico">🗺️</span>校园地图</button>
+
+      <div class="nav-group-title">校园 CAMPUS</div>
+      <button class="nav-btn" data-page="community"><span class="nav-ico">💬</span>社区</button>
+      <button class="nav-btn" data-page="announcements"><span class="nav-ico">📢</span>校园公告 <span class="nav-count" id="announcementNavCount">0</span></button>
+
+      <div class="nav-group-title">服务 SERVICES</div>
+      <button class="nav-btn" data-page="nutrition"><span class="nav-ico">🥗</span>营养助手</button>
+      <button class="nav-btn" data-page="services"><span class="nav-ico">🛵</span>校园服务</button>
+
+      <div class="nav-group-title">个人 PROFILE</div>
+      <button class="nav-btn" data-page="mine"><span class="nav-ico">👤</span>我的</button>
+      <button class="nav-btn" data-page="settings"><span class="nav-ico">⚙️</span>设置</button>
+    </nav>
+    <div class="side-tip">
+      <b>今天吃什么？</b>
+      <p>不知道怎么选时，直接交给“随机干饭”。预算、口味、主食类型都能筛。</p>
+    </div>
+    <div class="side-version" id="sideVersion">校园觅食 · v1.7.0 <span class="beta-tag">Beta</span><br>Campus Food Finder</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="welcome">
+        <h1 id="pageTitle">晚上好，今天想吃点什么？</h1>
+        <p id="pageSub">发现校园里的好味道，也看看同学们最近都在吃什么。</p>
+      </div>
+      <div class="top-actions">
+        <input class="search-global" id="globalSearch" placeholder="搜索菜品、食堂或窗口..." />
+        <button class="icon-btn" id="searchBtn">🔎</button>
+        <button class="primary-btn" id="publishTop">＋ 发动态</button>
+      </div>
+    </div>
+
+    <section class="page active" id="page-home">
+      <div class="announce-strip" id="homeAnnouncementStrip" onclick="openTopAnnouncement()">
+        <div class="aico">📢</div>
+        <div class="grow"><b id="homeAnnouncementTitle">校园公告加载中…</b><small id="homeAnnouncementMeta">重要信息会在这里轻量展示</small></div>
+        <span class="more">查看公告 →</span>
+      </div>
+      <div class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">校内专属 · 真实评价 · 不做外卖</span>
+          <h2>不知道吃什么？<br>让校园觅食替你选。</h2>
+          <p>从食堂、楼层、窗口到具体菜品，一站式查看。评分、价格、口味、同学评价都在这里。</p>
+          <div class="hero-actions">
+            <button class="primary-btn" data-jump="random">🎲 立即随机干饭</button>
+            <button class="ghost-btn" data-jump="rank">看看本周必吃</button>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="food-orbit">
+            <div class="food-core">🍜</div>
+            <div class="orb o1">🍚</div><div class="orb o2">🥟</div><div class="orb o3">🌶️</div><div class="orb o4">🍲</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div><h3>校园食堂 · 当前状态</h3><p>先看看营业和排队情况，再决定去哪吃。当前为可交互演示状态。</p></div>
+          <button class="link-btn" id="viewAllCanteens">查看全部 →</button>
+        </div>
+        <div class="canteen-grid" id="canteenGrid"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div><h3>今日推荐</h3><p>根据热度、评分与性价比综合推荐。</p></div>
+          <button class="link-btn" data-jump="rank">更多推荐 →</button>
+        </div>
+        <div class="dish-grid" id="recommendGrid"></div>
+      </div>
+
+      <div class="nutrition-banner" id="homeNutrition">
+        <div>
+          <h3>🥗 今日营养</h3>
+          <p>不只告诉你什么好吃，也帮你看看这一餐大概吃进了什么。所有数值均为估算参考。</p>
+        </div>
+        <div class="nutrition-mini">
+          <div class="nmini"><b id="homeCalories">0 kcal</b><span>今日已记录</span></div>
+          <div class="nmini"><b id="homeProtein">0 g</b><span>蛋白质</span></div>
+          <div class="nmini"><b id="homeSpend">¥0</b><span>今日饮食消费</span></div>
+          <button class="ghost-btn" data-jump="nutrition">查看营养助手 →</button>
+        </div>
+      </div>
+
+      <div class="home-split">
+        <div class="panel">
+          <div class="section-head"><div><h3>本周必吃 TOP 5</h3><p>同校同学票出来的高人气菜品。</p></div></div>
+          <div id="miniRank"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><div><h3>同学都在吃</h3><p>校园里的真实美食动态。</p></div><button class="link-btn" data-jump="community">去社区 →</button></div>
+          <div class="community-mini" id="communityMini"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-rank">
+      <div class="filter-bar" id="rankFilters">
+        <button class="pill active" data-rank="必吃">本周必吃</button>
+        <button class="pill" data-rank="便宜">10元吃饱榜</button>
+        <button class="pill" data-rank="夜宵">夜宵榜</button>
+        <button class="pill" data-rank="上新">上新菜品</button>
+        <button class="pill" data-rank="隐藏">隐藏菜单</button>
+      </div>
+      <div class="rank-grid" id="rankGrid"></div>
+    </section>
+
+    <section class="page" id="page-random">
+      <div class="random-wrap">
+        <div class="random-form">
+          <h2 style="margin-top:0">🎲 随机干饭</h2>
+          <p style="color:var(--sub);line-height:1.7">把选择困难交给我们。你也可以先设置预算、口味和主食偏好。</p>
+
+          <div class="form-row">
+            <label>预算</label>
+            <div class="option-group" data-group="budget">
+              <button class="opt active" data-value="all">不限</button>
+              <button class="opt" data-value="10">10元以内</button>
+              <button class="opt" data-value="15">15元以内</button>
+              <button class="opt" data-value="20">20元以内</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>口味</label>
+            <div class="option-group" data-group="spicy">
+              <button class="opt active" data-value="all">都可以</button>
+              <button class="opt" data-value="spicy">想吃辣</button>
+              <button class="opt" data-value="light">清淡一点</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>类型</label>
+            <div class="option-group" data-group="type">
+              <button class="opt active" data-value="all">不限</button>
+              <button class="opt" data-value="rice">米饭</button>
+              <button class="opt" data-value="noodle">面 / 粉</button>
+              <button class="opt" data-value="snack">小吃</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>今天想怎么吃？</label>
+            <div class="option-group" data-group="nutrition">
+              <button class="opt active" data-value="all">随便吃</button>
+              <button class="opt" data-value="protein">🥩 高蛋白</button>
+              <button class="opt" data-value="calorie">🔥 热量低一些</button>
+              <button class="opt" data-value="light">🥬 清淡一点</button>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="randomBtn" style="width:100%;padding:14px">帮我选！</button>
+        </div>
+
+        <div class="random-stage">
+          <div class="rand-empty" id="randEmpty">
+            <div class="big">🍽️</div>
+            <h2>今天吃什么？</h2>
+            <p>点一下“帮我选”，答案马上出现。</p>
+          </div>
+          <div class="result-card" id="resultCard"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="page" id="page-nutrition">
+      <div class="nutrition-overview">
+        <div class="nutrition-hero">
+          <span class="eyebrow" style="background:rgba(255,255,255,.12)">今日饮食 · 估算参考</span>
+          <h2 style="margin-top:14px">今天已经记录了什么？</h2>
+          <p>浏览不等于吃了。只有你在菜品详情中点击“我吃了”，才会计入今天的饮食记录。</p>
+          <div class="nutri-big"><b id="todayCalories">0</b><span>kcal · 今日已记录</span></div>
+          <div class="nutri-grid">
+            <div class="nutri-box"><b id="todayProtein">0 g</b><span>蛋白质</span></div>
+            <div class="nutri-box"><b id="todayCarbs">0 g</b><span>碳水</span></div>
+            <div class="nutri-box"><b id="todayFat">0 g</b><span>脂肪</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><div><h3>今日饮食记录</h3><p>按早餐、午餐、晚餐和加餐自动归类。</p></div></div>
+          <div class="meal-list" id="mealList"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div><h3>营养助手怎么帮你</h3><p>重点不是“给食物打健康分”，而是帮助你理解一餐的营养特点。</p></div></div>
+        <div class="canteen-grid">
+          <div class="canteen-card"><div class="canteen-icon">🔥</div><b>热量参考</b><span>查看每份菜品的大致热量区间，不把估算值伪装成精确测量。</span></div>
+          <div class="canteen-card"><div class="canteen-icon">🥩</div><b>营养成分</b><span>展示蛋白质、碳水、脂肪、膳食纤维和钠等核心信息。</span></div>
+          <div class="canteen-card"><div class="canteen-icon">🍽️</div><b>我吃了</b><span>真正吃过才记录，避免把浏览过的菜误算进当天饮食。</span></div>
+          <div class="canteen-card"><div class="canteen-icon">🎯</div><b>智能随机</b><span>随机干饭可以增加高蛋白、低热量、清淡等筛选偏好。</span></div>
+        </div>
+      </div>
+
+      <div class="home-split">
+        <div class="panel">
+          <div class="section-head"><div><h3>今天还适合吃什么？</h3><p>根据当前已记录饮食给出温和建议，不做强制限制。</p></div></div>
+          <div id="nutritionSuggestion" style="line-height:1.8;color:#62574F"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><div><h3>数据说明</h3><p>校园食堂菜品没有统一包装营养标签。</p></div></div>
+          <div class="nutrition-note">
+            当前营养信息为产品演示用估算数据，实际数值会因食材重量、用油量、调料与制作方式变化。
+            正式上线后应尽可能结合食堂配方、标准份量或可信食品成分数据库校准，并始终保留“估算值”标识。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-community">
+      <div class="community-tabs">
+        <button class="community-tab active" data-community-tab="feed" onclick="showCommunityTab('feed')">💬 社区动态</button>
+        <button class="community-tab" data-community-tab="chat" onclick="showCommunityTab('chat')">💭 私聊</button>
+        <button class="community-tab" onclick="switchPage('announcements')">📢 校园公告 <span id="communityAnnouncementCount"></span></button>
+      </div>
+
+      <div class="community-view active" id="community-feed-view">
+        <div class="announce-strip" id="communityPinnedNotice" onclick="openTopAnnouncement()" style="margin-bottom:14px">
+          <div class="aico">📌</div>
+          <div class="grow"><b id="communityPinnedTitle">重要公告</b><small>官方信息与学生动态分开展示，避免混淆。</small></div>
+          <span class="more">查看 →</span>
+        </div>
+        <div class="community-layout">
+          <div class="feed" id="feed"></div>
+          <aside class="community-aside">
+            <div class="side-box">
+              <h4>校园热门话题</h4>
+              <div class="chips">
+                <span class="chip">#十元吃饱</span><span class="chip">#二食堂测评</span><span class="chip">#新品踩雷</span>
+                <span class="chip">#夜宵推荐</span><span class="chip">#隐藏菜单</span>
+              </div>
+            </div>
+            <div class="side-box">
+              <h4>发布你的探店</h4>
+              <p style="color:var(--sub);font-size:13px;line-height:1.7">把今天吃到的好东西分享给同学，也可以直接关联食堂、窗口和菜品。</p>
+              <button class="primary-btn" id="publishSide" style="width:100%">＋ 发布动态</button>
+            </div>
+            <div class="side-box">
+              <h4>私聊同学</h4>
+              <p style="color:var(--sub);font-size:13px;line-height:1.7">看到想交流的探店内容，可以进入社区里的私聊，不再单独占用一个一级功能。</p>
+              <button class="ghost-btn" onclick="showCommunityTab('chat')" style="width:100%">进入私聊 →</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="community-view" id="community-chat-view">
+        <div class="chat-layout">
+          <div class="chat-list" id="chatList"></div>
+          <div class="chat-pane">
+            <div class="chat-head" id="chatHead">选择一位同学开始聊天</div>
+            <div class="chat-messages" id="chatMessages"><div class="empty-note">私聊属于社区的一部分：支持文字消息，后续可扩展图片、菜品卡片、食堂位置与跑腿订单分享。</div></div>
+            <div class="chat-input"><input id="chatInput" placeholder="输入消息..." /><button class="primary-btn" id="chatSend">发送</button></div>
+          </div>
+        </div>
+        <div class="nutrition-note" style="margin-top:12px">正式上线时需同时提供陌生人私信开关、拉黑、举报、内容安全与消息隐私设置。相关权限已统一放入“设置”。</div>
+      </div>
+    </section>
+
+    <section class="page" id="page-announcements">
+      <div class="announce-filters" id="announcementFilters">
+        <button class="announce-filter on" data-ann-filter="全部">全部</button>
+        <button class="announce-filter" data-ann-filter="食堂">食堂</button>
+        <button class="announce-filter" data-ann-filter="校园码">校园码</button>
+        <button class="announce-filter" data-ann-filter="跑腿">跑腿</button>
+        <button class="announce-filter" data-ann-filter="活动">活动</button>
+        <button class="announce-filter" data-ann-filter="系统">系统</button>
+      </div>
+      <div class="announce-layout">
+        <div class="announce-list" id="announcementList"></div>
+        <aside class="announce-aside">
+          <div class="announce-stat">
+            <h4>公告概览</h4>
+            <div class="announce-stat-grid">
+              <div class="announce-stat-box"><b id="announceUnreadStat">0</b><span>未读</span></div>
+              <div class="announce-stat-box"><b id="announceImportantStat">0</b><span>重要 / 紧急</span></div>
+            </div>
+            <button class="ghost-btn" id="markAllAnnouncements" style="width:100%;margin-top:10px">全部标为已读</button>
+          </div>
+          <div class="announce-stat">
+            <h4>公告来自谁？</h4>
+            <div class="announce-link-list">
+              <div class="announce-link">🏫 <b>学校 / 校园服务</b><br>补贴、服务与校园安排</div>
+              <div class="announce-link">🍱 <b>食堂管理员</b><br>营业、窗口、菜品供应</div>
+              <div class="announce-link">🛡️ <b>校园觅食官方</b><br>版本更新与系统维护</div>
+            </div>
+          </div>
+          <div class="nutrition-note">本页公告内容为产品原型示例。正式上线后必须对“学校官方 / 食堂管理员 / 平台官方”身份进行后台认证，普通学生帖子不能伪装成官方公告。</div>
+        </aside>
+      </div>
+    </section>
+
+<section class="page" id="page-map">
+      <div class="campus-map-wrap">
+        <div class="campus-map">
+          <svg viewBox="0 0 1000 700" preserveAspectRatio="none" aria-label="贵阳学院校园示意地图">
+            <path d="M70 615 C200 560 250 500 355 430 S560 325 680 235 S840 130 940 95" fill="none" stroke="#D7D0BE" stroke-width="34" stroke-linecap="round"/>
+            <path d="M125 110 C220 175 320 240 430 300 S665 430 890 575" fill="none" stroke="#E3DAC8" stroke-width="24" stroke-linecap="round"/>
+            <path d="M270 70 C310 190 390 300 470 395 S620 555 720 650" fill="none" stroke="#E7DECF" stroke-width="17" stroke-linecap="round"/>
+            <path d="M90 390 C255 370 405 350 560 360 S780 410 940 470" fill="none" stroke="#E8DFC7" stroke-width="15" stroke-linecap="round"/>
+            <ellipse cx="735" cy="515" rx="120" ry="70" fill="#DDEAD8" stroke="#C6DCC2" stroke-width="6"/>
+            <ellipse cx="735" cy="515" rx="88" ry="45" fill="#EAF4E6"/>
+            <rect x="110" y="150" width="120" height="75" rx="16" fill="#E7DCC6"/>
+            <rect x="265" y="170" width="125" height="82" rx="16" fill="#EADFCB"/>
+            <rect x="480" y="90" width="140" height="88" rx="16" fill="#E4D7C0"/>
+            <rect x="535" y="485" width="115" height="78" rx="16" fill="#E8DDCA"/>
+            <rect x="160" y="445" width="135" height="85" rx="16" fill="#E2E9D8"/>
+            <rect x="335" y="510" width="135" height="92" rx="16" fill="#E2E9D8"/>
+            <text x="500" y="38" text-anchor="middle" font-size="19" fill="#6C7568" font-weight="700">贵阳学院 · 校园觅食地图（原型示意）</text>
+            <text x="500" y="670" text-anchor="middle" font-size="13" fill="#9A9489">主干路 / 教学区 / 宿舍区 / 食堂 / 体育场等相对关系示意</text>
+            <text x="170" y="190" text-anchor="middle" font-size="14" fill="#776D63">明理楼</text>
+            <text x="327" y="212" text-anchor="middle" font-size="14" fill="#776D63">图书馆</text>
+            <text x="550" y="135" text-anchor="middle" font-size="14" fill="#776D63">博信楼</text>
+            <text x="592" y="525" text-anchor="middle" font-size="14" fill="#776D63">技术 / 实训区</text>
+            <text x="227" y="490" text-anchor="middle" font-size="14" fill="#5E735F">梨园小区</text>
+            <text x="402" y="555" text-anchor="middle" font-size="14" fill="#5E735F">竹园小区</text>
+            <text x="735" y="520" text-anchor="middle" font-size="14" fill="#5E735F">体育场</text>
+            <text x="78" y="640" font-size="13" fill="#7B736A">校门方向</text>
+          </svg>
+
+          <button class="map-pin food" style="left:22%;top:31%" onclick="mapSelect('一食堂')"><span class="bubble">🍚 一食堂</span><span class="point"></span></button>
+          <button class="map-pin food" style="left:42%;top:57%" onclick="mapSelect('二食堂')"><span class="bubble">🍱 二食堂</span><span class="point"></span></button>
+          <button class="map-pin food" style="left:44%;top:65%" onclick="mapSelect('三食堂')"><span class="bubble">🍜 三食堂</span><span class="point"></span></button>
+          <button class="map-pin food" style="left:60%;top:28%" onclick="mapSelect('民族食堂')"><span class="bubble">🥘 民族食堂</span><span class="point"></span></button>
+          <button class="map-pin dorm" style="left:23%;top:73%" onclick="mapSelect('梨园小区')"><span class="bubble">🏠 梨园小区</span><span class="point"></span></button>
+          <button class="map-pin dorm" style="left:41%;top:83%" onclick="mapSelect('竹园小区')"><span class="bubble">🏢 竹园小区</span><span class="point"></span></button>
+          <button class="map-pin landmark" style="left:73%;top:78%" onclick="mapSelect('体育场')"><span class="bubble">🏟️ 体育场</span><span class="point"></span></button>
+          <button class="map-pin landmark" style="left:33%;top:34%" onclick="mapSelect('图书馆')"><span class="bubble">📚 图书馆</span><span class="point"></span></button>
+        </div>
+
+        <aside class="map-side">
+          <div class="map-info">
+            <h3 id="mapPlaceTitle">校园地图</h3>
+            <p id="mapPlaceDesc">点击地图中的食堂、寝室或地标查看说明。当前位置关系依据公开校园资料整理，属于产品原型示意，不作为精确导航。</p>
+            <div class="map-legend"><span>🍚 食堂</span><span>🏠 寝室</span><span>📚 地标</span><span>🛣️ 道路索引</span></div>
+          </div>
+          <div class="map-info">
+            <h4>常用路线索引</h4>
+            <div class="route-list">
+              <div class="route-step"><b>01</b><span>梨园小区 → 二食堂 / 三食堂：宿舍区学生就餐的近距离路线示意。</span></div>
+              <div class="route-step"><b>02</b><span>校门方向 → 明理楼 → 一食堂：一食堂位于明理楼后方的公开位置关系。</span></div>
+              <div class="route-step"><b>03</b><span>博信楼 → 民族食堂：民族（清真）食堂位于博信楼后方的公开位置关系。</span></div>
+              <div class="route-step"><b>04</b><span>竹园小区 → 体育场 / 技术区：竹园小区更靠近体育场和技术教学区域。</span></div>
+            </div>
+          </div>
+          <div class="nutrition-note">地图页目前先做“校园导航原型”。正式上线前应使用学校授权的准确校园底图或 GIS 数据重新校准建筑、道路和入口位置。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="page" id="page-services">
+      <div class="runner-hero">
+        <div>
+          <span class="eyebrow">Campus Services · Prototype</span>
+          <h2>从“找饭”走向校园生活服务</h2>
+          <p>校园码、账号认证、跑腿配送和会员体系目前均为界面与流程原型，不接入真实资金、学校身份系统或信用系统。</p>
+        </div>
+        <div class="runner-badge">
+          <b>🛵 校园跑腿</b>
+          <p style="margin-top:7px">可带饭、取快递、带生活用品。跑腿员需完成校园身份认证、保证金流程与平台履约规范后方可接单。</p>
+        </div>
+      </div>
+
+      <div class="mini-tabs" style="margin-top:18px">
+        <button class="mini-tab on" data-service-tab="delivery">点单 / 跑腿</button>
+        <button class="mini-tab" data-service-tab="member">会员方案</button>
+        <button class="mini-tab" data-service-tab="runner">跑腿员注册</button>
+        <button class="mini-tab" data-service-tab="ports">预留接口</button>
+      </div>
+
+      <div class="service-section active" id="service-delivery">
+        <div class="panel">
+          <div class="section-head"><div><h3>校园跑腿下单原型</h3><p>食堂菜品价格保持原价，跑腿与平台服务费用单独透明展示。</p></div></div>
+          <div class="order-builder">
+            <div>
+              <div class="field"><label>帮我带什么</label>
+                <select id="deliveryDish"><option value="1">贵州辣子鸡 · ¥12.8</option><option value="2">酸汤牛肉粉 · ¥10</option><option value="4">手工水饺 · ¥9.5</option></select>
+              </div>
+              <div class="field"><label>送到哪里</label><input id="deliveryAddr" value="梨园小区 · 宿舍楼下" /></div>
+              <div class="field"><label>备注</label><input id="deliveryNote" placeholder="例如：不要香菜、到楼下联系我" /></div>
+              <label style="font-size:11px"><input type="checkbox" id="deliveryMember"> 使用校园觅食会员价格</label>
+            </div>
+            <div class="order-summary">
+              <b>费用预览</b>
+              <div class="fee-row"><span>商品原价</span><b id="feeFood">¥12.8</b></div>
+              <div class="fee-row"><span>跑腿服务费</span><b id="feeRunner">¥2.5</b></div>
+              <div class="fee-row"><span>平台服务费</span><b id="feePlatform">¥0.3</b></div>
+              <div class="fee-row"><span>会员优惠</span><b id="feeDiscount">-¥0</b></div>
+              <div class="fee-row"><span>预计合计</span><b class="price" id="feeTotal">¥15.6</b></div>
+              <button class="primary-btn" id="simulateOrder" style="width:100%;margin-top:10px">提交原型订单</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-section" id="service-member">
+        <div class="price-compare">
+          <div class="price-plan">
+            <h3>普通用户</h3><div class="bigp">¥0</div>
+            <ul><li>菜品维持食堂原价</li><li>跑腿服务费约 ¥2.5 / 单（示例）</li><li>平台服务费约 ¥0.3 / 单（示例）</li><li>按单使用，无月费</li></ul>
+          </div>
+          <div class="price-plan member">
+            <h3>校园觅食会员</h3><div class="bigp">¥6.9<small style="font-size:12px"> / 月（示例）</small></div>
+            <ul><li>菜品仍保持食堂原价</li><li>跑腿服务费可降至约 ¥1 / 单</li><li>会员优惠券与低峰时段优惠</li><li>不采用高额餐品加价和高抽佣模式</li></ul>
+            <button class="primary-btn" onclick="toast('会员购买仅为原型，暂未接入支付')" style="width:100%">体验会员入口</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-section" id="service-runner">
+        <div class="home-split">
+          <div class="panel">
+            <h3 style="margin-top:0">跑腿员注册</h3>
+            <div class="field"><label>校园身份</label><input value="未完成校园身份认证" disabled /></div>
+            <div class="field"><label>联系电话</label><input placeholder="认证后填写" disabled /></div>
+            <div class="field"><label>履约保证金</label><input value="¥20（原型示例，不产生真实扣款）" disabled /></div>
+            <button class="primary-btn" onclick="openModal('accountModal')">先完成账号 / 校园身份</button>
+          </div>
+          <div class="panel">
+            <h3 style="margin-top:0">跑腿员准入逻辑</h3>
+            <div class="setting-row"><span>✅</span><div class="grow"><b>校园实名身份</b><small>确认是在校学生身份</small></div></div>
+            <div class="setting-row"><span>🛡️</span><div class="grow"><b>履约保证金</b><small>正式规则需学校和平台审核，当前只保留流程入口</small></div></div>
+            <div class="setting-row"><span>📋</span><div class="grow"><b>平台履约记录</b><small>超时、取消、商品异常等先在平台内部记录</small></div></div>
+            <div class="setting-row"><span>🏫</span><div class="grow"><b>学校信用接口</b><small>仅在学校授权、用户知情和有正式接口时接入</small></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-section" id="service-ports">
+        <div class="service-grid">
+          <div class="port-card"><b>🔐 统一身份认证端口</b><p>预留账号、学号和学校认证系统的后端接口位置，当前不存储真实学号。</p></div>
+          <div class="port-card"><b>💳 校园码 / 补贴账户端口</b><p>预留余额、补贴入账、付款码和支付记录接口，当前全部使用模拟数据。</p></div>
+          <div class="port-card"><b>🏫 校园信用端口</b><p>未来若学校提供正式信用接口，再通过授权读取或提交合规的履约信息。</p></div>
+          <div class="port-card"><b>🧾 订单 / 退款端口</b><p>正式跑腿系统需要订单状态、取消、退款、申诉、客服和凭证留存。</p></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="page" id="page-settings">
+      <div class="settings-page-grid">
+        <div class="settings-panel">
+          <h3>👤 个人资料</h3>
+          <p>管理在校园觅食中对外显示的个人信息。</p>
+          <div class="settings-action"><div class="ico">🖼️</div><div class="grow"><b>头像与昵称</b><small>修改头像、昵称和个性签名</small></div><button class="settings-link" onclick="openModal('profileModal')">编辑</button></div>
+          <div class="settings-action"><div class="ico">🍽️</div><div class="grow"><b>饮食偏好与忌口</b><small>在“我的”页面继续管理普通忌口和严格避免项</small></div><button class="settings-link" onclick="switchPage('mine')">去设置</button></div>
+          <div class="settings-action"><div class="ico">🎓</div><div class="grow"><b>校园身份</b><small>账号与学号认证接口暂时保留</small></div><span class="settings-status">未绑定</span><button class="settings-link" onclick="openModal('accountModal')">查看</button></div>
+        </div>
+
+        <div class="settings-panel">
+          <h3>🔒 隐私保护</h3>
+          <p>控制谁能联系你，以及哪些个人记录可以对外显示。</p>
+          <div class="setting-row"><span>💭</span><div class="grow"><b>仅同校认证用户可私聊我</b><small>减少陌生账号骚扰</small></div><button class="switch on" data-setting="schoolOnly"><i></i></button></div>
+          <div class="setting-row"><span>👁️</span><div class="grow"><b>公开我的饮食记录</b><small>关闭后仅自己可见</small></div><button class="switch" data-setting="publicMeals"><i></i></button></div>
+          <div class="settings-action"><div class="ico">🚫</div><div class="grow"><b>黑名单</b><small>管理被拉黑的用户</small></div><button class="settings-link" onclick="toast('黑名单管理界面已预留')">管理</button></div>
+        </div>
+
+        <div class="settings-panel">
+          <h3>🔔 消息通知</h3>
+          <p>可以分别控制社区、私聊、公告和校园服务提醒。</p>
+          <div class="setting-row"><span>💬</span><div class="grow"><b>私聊消息通知</b><small>社区私聊有新消息时提醒</small></div><button class="switch on" data-setting="chatNotice"><i></i></button></div>
+          <div class="setting-row"><span>❤️</span><div class="grow"><b>评论与点赞通知</b><small>社区互动提醒</small></div><button class="switch on" data-setting="socialNotice"><i></i></button></div>
+          <div class="setting-row"><span>🛵</span><div class="grow"><b>订单 / 跑腿通知</b><small>接单、取餐、送达等状态变化</small></div><button class="switch on" data-setting="orderNotice"><i></i></button></div>
+          <div class="setting-row"><span>📢</span><div class="grow"><b>重要公告通知</b><small>营业变化、补贴、系统维护等重要信息</small></div><button class="switch on" data-setting="importantAnnouncement"><i></i></button></div>
+          <div class="setting-row"><span>🍜</span><div class="grow"><b>新品 / 普通公告通知</b><small>菜品上新与一般活动信息</small></div><button class="switch" data-setting="normalAnnouncement"><i></i></button></div>
+        </div>
+
+        <div class="settings-panel">
+          <h3>🛡️ 账号与安全</h3>
+          <p>当前账号系统仍处于功能壳阶段，先把入口和结构预留完整。</p>
+          <div class="settings-action"><div class="ico">🔐</div><div class="grow"><b>登录与注册</b><small>手机号、验证码、密码登录后续接入</small></div><span class="settings-status">功能壳</span><button class="settings-link" onclick="openModal('accountModal')">进入</button></div>
+          <div class="settings-action"><div class="ico">📱</div><div class="grow"><b>登录设备</b><small>未来查看已登录的手机、电脑和小程序</small></div><button class="settings-link" onclick="toast('登录设备管理端口已预留')">查看</button></div>
+          <div class="settings-action"><div class="ico">🔑</div><div class="grow"><b>支付与校园码安全</b><small>支付密码、验证方式与免密设置后续接入</small></div><button class="settings-link" onclick="openModal('campusCodeModal');renderFakeQR()">查看</button></div>
+        </div>
+
+        <div class="settings-panel full">
+          <h3>🧩 通用与关于</h3>
+          <p>管理本机数据和查看软件版本信息。</p>
+          <div class="settings-action"><div class="ico">🧹</div><div class="grow"><b>清理本地演示数据</b><small>收藏、动态、饮食、公告已读等测试数据仍可在“我的”中一键清理</small></div><button class="settings-link" onclick="switchPage('mine')">前往我的</button></div>
+          <div class="settings-action"><div class="ico">📦</div><div class="grow"><b>当前版本</b><small>校园觅食 Web v1.7.0 PWA Beta</small></div><span class="settings-status good">Beta</span><button class="settings-link" onclick="openModal('versionModal')">更新日志</button></div>
+          <div class="settings-action"><div class="ico">📄</div><div class="grow"><b>用户协议与隐私政策</b><small>正式上线前需补充完整协议文本</small></div><button class="settings-link" onclick="toast('协议页面端口已预留')">查看</button></div>
+        </div>
+      </div>
+    </section>
+
+<section class="page" id="page-mine">
+      <div class="profile-hero">
+        <div class="profile-avatar">🧑‍🎓</div>
+        <div>
+          <h2>觅食同学</h2>
+          <p>偏爱：微辣 · 米饭 · 性价比</p>
+          <div class="chips"><span class="chip">大二</span><span class="chip">觅食 26 天</span><span class="chip">校园吃货 Lv.3</span></div>
+        </div>
+      </div>
+
+      <div class="service-grid" style="margin-top:16px">
+        <div class="service-card" onclick="openModal('profileModal')"><div class="sico">✏️</div><b>编辑资料</b><span>修改昵称、头像与个性签名</span></div>
+        <div class="service-card" onclick="switchPage('settings')"><div class="sico">⚙️</div><b>设置</b><span>隐私保护、消息通知、账号安全与更多设置</span></div>
+        <div class="service-card" onclick="openModal('accountModal')"><div class="sico">🔐</div><b>账号与校园身份</b><span>注册 / 登录 / 学生身份绑定端口</span></div>
+        <div class="service-card" onclick="openModal('campusCodeModal')"><div class="sico">💳</div><b>校园码</b><span>补贴余额、付款码与支付记录原型</span></div>
+      </div>
+
+      <div class="diet-block">
+        <h3>饮食偏好与忌口</h3>
+        <p>普通忌口用于推荐过滤；“需要严格避免”单独标记，正式上线时仍需以食堂实际配方和现场确认结果为准。</p>
+        <b style="font-size:11px">常见忌口</b>
+        <div class="diet-tags" id="dietNormal" style="margin-top:8px"></div>
+        <b style="font-size:11px;display:block;margin-top:14px">需要严格避免 / 过敏原</b>
+        <div class="diet-tags" id="dietStrict" style="margin-top:8px"></div>
+        <div class="danger-note">⚠️ 过敏原信息不能仅依赖菜名或算法推断。软件只能辅助提示，不能替代食堂配方确认与个人医疗建议。</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box"><b id="favCount">0</b><span>我的收藏</span></div>
+        <div class="stat-box"><b>8</b><span>我的评论</span></div>
+        <div class="stat-box"><b id="postCount">0</b><span>我的发帖</span></div>
+        <div class="stat-box"><b>23</b><span>点赞获赞</span></div>
+      </div>
+
+      <div class="expense-banner">
+        <div>
+          <h3>💰 我的校园饭堂账本</h3>
+          <p>点击菜品详情中的“我吃了”后，会同时记录这顿饭的价格。这里统计的是你在校园觅食里记录的消费，不代表银行卡或真实支付流水。</p>
+        </div>
+        <div class="expense-big"><b id="weekSpend">¥0</b><span>本周已记录消费</span></div>
+      </div>
+      <div class="expense-grid">
+        <div class="expense-box"><b id="todaySpend">¥0</b><span>今日消费</span></div>
+        <div class="expense-box"><b id="monthSpend">¥0</b><span>本月消费</span></div>
+        <div class="expense-box"><b id="avgMealSpend">¥0</b><span>平均每餐</span></div>
+        <div class="expense-box"><b id="favCanteen">暂无</b><span>最常去食堂</span></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <div class="section-head"><div><h3>最近饮食消费</h3><p>营养记录和消费记录使用同一条“我吃了”数据。</p></div></div>
+        <div class="expense-list" id="expenseList"></div>
+      </div>
+
+      <div class="mine-grid">
+        <div class="panel">
+          <div class="section-head"><div><h3>我的收藏</h3><p>收藏过的菜品会保存在浏览器本地。</p></div></div>
+          <div class="fav-list" id="favList"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><div><h3>饮食偏好</h3><p>后续可用于更精准的随机推荐。</p></div></div>
+          <div class="pref-list">
+            <button class="pill active">微辣</button><button class="pill active">米饭</button><button class="pill">面食</button>
+            <button class="pill active">15元以内</button><button class="pill">素食</button><button class="pill">清淡</button>
+          </div>
+          <div style="height:16px"></div>
+          <button class="ghost-btn" id="clearData">清除本地收藏、动态与饮食记录</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin:28px 0 4px;color:#B5A79B;font-size:11px;cursor:pointer" id="mineVersion">
+        校园觅食 · v1.7.0 <span class="beta-tag">Beta</span><br>
+        让校园里的每一餐，都少一点纠结。
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="mobile-nav">
+  <button class="mnav active" data-page="home"><span>🏠</span>首页</button>
+  <button class="mnav" data-page="map"><span>🗺️</span>地图</button>
+  <button class="mnav" data-page="random"><span>🎲</span>吃啥</button>
+  <button class="mnav" data-page="community"><span>💬</span>社区</button>
+  <button class="mnav" data-page="mine"><span>👤</span>我的</button>
+</nav>
+
+<div class="toast" id="toast">已完成</div>
+
+<div class="modal" id="dishModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>菜品详情</h3><button class="close-btn" data-close="dishModal">×</button></div>
+    <div id="dishDetail"></div>
+  </div>
+</div>
+
+<div class="modal" id="canteenModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="canteenTitle">食堂详情</h3><button class="close-btn" data-close="canteenModal">×</button></div>
+    <div id="canteenDetail"></div>
+  </div>
+</div>
+
+<div class="modal" id="publishModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>发布美食动态</h3><button class="close-btn" data-close="publishModal">×</button></div>
+    <div class="field"><label>标题</label><input id="postTitle" placeholder="例如：二食堂这家辣子鸡真的可以！"></div>
+    <div class="field"><label>正文</label><textarea id="postContent" placeholder="写下口味、价格、份量、推荐理由..."></textarea></div>
+    <div class="field"><label>关联菜品</label><select id="postDish" style="width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff"></select></div>
+    <button class="primary-btn" id="submitPost" style="width:100%;padding:13px">发布动态</button>
+  </div>
+</div>
+
+
+
+<div class="modal" id="announcementModal">
+  <div class="modal-card" style="max-width:680px">
+    <div class="modal-head"><h3>校园公告</h3><button class="close-btn" data-close="announcementModal">×</button></div>
+    <div id="announcementDetail"></div>
+  </div>
+</div>
+
+<div class="modal" id="profileModal">
+  <div class="modal-card" style="max-width:560px">
+    <div class="modal-head"><h3>编辑个人资料</h3><button class="close-btn" data-close="profileModal">×</button></div>
+    <div class="avatar-editor">
+      <div class="avatar-preview" id="profileAvatarPreview">🧑‍🎓</div>
+      <div><b>头像</b><div class="tiny-note">可以选择本地图片，仅保存在当前浏览器。</div><input type="file" id="avatarFile" accept="image/*" style="margin-top:7px;max-width:260px"></div>
+    </div>
+    <div class="field"><label>昵称</label><input id="profileNickname" value="觅食同学"></div>
+    <div class="field"><label>个性签名</label><input id="profileBio" value="今天也要好好吃饭"></div>
+    <button class="primary-btn" id="saveProfile" style="width:100%">保存资料</button>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-card" style="max-width:600px">
+    <div class="modal-head"><h3>设置</h3><button class="close-btn" data-close="settingsModal">×</button></div>
+    <div class="settings-list">
+      <div class="setting-row"><span>🔒</span><div class="grow"><b>仅同校认证用户可私聊我</b><small>减少陌生账号骚扰</small></div><button class="switch on" data-setting="schoolOnly"><i></i></button></div>
+      <div class="setting-row"><span>👁️</span><div class="grow"><b>公开我的饮食记录</b><small>关闭后仅自己可见</small></div><button class="switch" data-setting="publicMeals"><i></i></button></div>
+      <div class="setting-row"><span>🔔</span><div class="grow"><b>私聊消息通知</b><small>新消息到达时提醒</small></div><button class="switch on" data-setting="chatNotice"><i></i></button></div>
+      <div class="setting-row"><span>❤️</span><div class="grow"><b>评论与点赞通知</b><small>社区互动提醒</small></div><button class="switch on" data-setting="socialNotice"><i></i></button></div>
+      <div class="setting-row"><span>🛵</span><div class="grow"><b>订单 / 跑腿通知</b><small>接单、取餐、送达等状态变化</small></div><button class="switch on" data-setting="orderNotice"><i></i></button></div>
+      <div class="setting-row"><span>📢</span><div class="grow"><b>重要公告通知</b><small>营业变化、补贴、系统维护等重要信息</small></div><button class="switch on" data-setting="importantAnnouncement"><i></i></button></div>
+      <div class="setting-row"><span>🍜</span><div class="grow"><b>新品 / 普通公告通知</b><small>菜品上新与一般活动信息</small></div><button class="switch" data-setting="normalAnnouncement"><i></i></button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="accountModal">
+  <div class="modal-card" style="max-width:640px">
+    <div class="modal-head"><h3>账号与校园身份</h3><button class="close-btn" data-close="accountModal">×</button></div>
+    <div class="account-shell">
+      <span class="shell-tag">功能壳 · 暂未接后端</span>
+      <h3>校园觅食账号</h3>
+      <p style="color:var(--sub);font-size:12px;line-height:1.7">当前版本先保留注册、登录与校园身份绑定流程。后期再接入验证码、密码、Token、找回密码和学校统一身份认证。</p>
+      <div class="home-split" style="margin-top:12px">
+        <button class="primary-btn" onclick="toast('注册流程暂为功能壳')">创建账号</button>
+        <button class="ghost-btn" onclick="toast('登录流程暂为功能壳')">已有账号登录</button>
+      </div>
+    </div>
+    <div class="account-shell" style="margin-top:12px">
+      <span class="shell-tag">未绑定</span>
+      <h3>校园身份认证</h3>
+      <p style="color:var(--sub);font-size:12px;line-height:1.7">正式版可绑定学校、姓名、学号和在校状态，但公开页面只显示“贵阳学院 · 已认证学生”，不公开学号。</p>
+      <button class="ghost-btn" onclick="toast('校园身份接口已预留，暂未接入学校系统')">绑定校园身份</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="campusCodeModal">
+  <div class="modal-card" style="max-width:650px">
+    <div class="modal-head"><h3>校园码</h3><button class="close-btn" data-close="campusCodeModal">×</button></div>
+    <div class="campus-code">
+      <div class="code-sub">校园饮食补贴账户 · 原型数据</div>
+      <div class="balance">¥236.80</div>
+      <div class="code-sub">本月补贴入账 ¥200.00 · 当前未连接学校真实账户</div>
+      <div class="qrbox" id="fakeQR"></div>
+      <div style="text-align:center;font-size:12px">付款码原型 · 请勿用于真实支付</div>
+    </div>
+    <div class="section-head" style="margin-top:16px"><div><h3>最近支付记录</h3><p>未来可与“我吃了”和营养记录自动联动。</p></div></div>
+    <div class="payment-list">
+      <div class="pay-item"><span>🍗</span><div class="grow"><b>二食堂 · 辣子鸡窗口</b><small>09-21 12:16 · 贵州辣子鸡</small></div><span class="amt">-¥12.80</span></div>
+      <div class="pay-item"><span>🥛</span><div class="grow"><b>一食堂 · 早餐窗口</b><small>09-21 08:02 · 豆浆 + 包子</small></div><span class="amt">-¥5.50</span></div>
+      <div class="pay-item"><span>🎓</span><div class="grow"><b>学校饮食补贴</b><small>09-01 00:05 · 月度补贴</small></div><span class="amt" style="color:#4E8B58">+¥200.00</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="versionModal">
+  <div class="modal-card" style="max-width:620px">
+    <div class="modal-head"><h3>版本更新</h3><button class="close-btn" data-close="versionModal">×</button></div>
+    <div class="version-log">
+      <div class="version-item"><h4>v1.7.0 PWA Beta <span class="version-current">当前版本</span> <span class="beta-tag">Beta</span></h4><p>新增 PWA 安装能力、应用图标、Manifest、Service Worker、基础离线缓存、Android / Windows 安装提示与 iOS 添加到主屏幕提示；保留 v1.6.0 的手机优先响应式布局。</p></div>
+      <div class="version-item"><h4>v1.6.0 Mobile Beta</h4><p>针对手机使用场景进行移动端适配：隐藏桌面侧边栏、强化底部导航、优化卡片单列排版与移动端弹窗。</p></div>
+      <div class="version-item"><h4>v1.5.0</h4><p>保留原有“我的”页面全部功能，并新增独立设置中心；私聊合并进“社区”。</p></div>
+      <div class="version-item"><h4>v1.4.0</h4><p>新增校园公告中心、公告分类与紧急程度、已读状态和功能联动。</p></div>
+      <div class="version-item"><h4>v1.3.0</h4><p>新增校园地图、忌口设置、校园码、账号与校园服务原型。</p></div>
+      <div class="version-item"><h4>v1.2.0</h4><p>新增食堂实时状态、多维评价和校园饭堂消费统计。</p></div>
+      <div class="version-item"><h4>v1.1.0</h4><p>新增营养助手与“我吃了”饮食记录。</p></div>
+      <div class="version-item"><h4>v1.0.0</h4><p>首个网页版原型。</p></div>
+    </div>
+    <div class="nutrition-note" style="margin-top:14px">当前为网页原型 Beta 版本，后续功能与数据结构仍会继续迭代。</div>
+  </div>
+</div>
+
+<script>
+const canteens = [
+  {id:1,name:"一食堂",emoji:"🏫",desc:"家常菜最全，适合日常干饭",floors:"2 层 · 18 个窗口",tags:["家常菜","早餐","性价比"],stalls:["黔味小炒","川香窗口","兰州面馆","轻食窗口"],status:"营业中",crowd:"一般",wait:8,openHours:"06:30–21:30",location:"校园东区 · 图书馆旁",route:"从图书馆正门向东步行约 3 分钟"},
+  {id:2,name:"二食堂",emoji:"🍱",desc:"新品多，学生最爱逛",floors:"3 层 · 24 个窗口",tags:["新品多","夜宵","奶茶"],stalls:["辣子鸡窗口","砂锅米线","麻辣烫","烤盘饭"],status:"营业中",crowd:"拥挤",wait:16,openHours:"06:30–22:30",location:"宿舍区中部 · 篮球场北侧",route:"从学生宿舍 5 栋向北步行约 4 分钟",specialNotice:"公告示例：一楼部分窗口今晚 20:30 提前结束营业"},
+  {id:3,name:"三食堂",emoji:"🍲",desc:"粉面、小吃和夜宵集中地",floors:"2 层 · 16 个窗口",tags:["粉面","小吃","夜宵"],stalls:["酸汤粉","肠旺面","手工饺子","烧烤窗口"],status:"营业中",crowd:"空闲",wait:3,openHours:"07:00–23:00",location:"校园西区 · 实训楼旁",route:"从实训楼 A 区出口步行约 2 分钟"},
+  {id:4,name:"民族餐厅",emoji:"🥘",desc:"风味餐、清真餐选择更丰富",floors:"1 层 · 10 个窗口",tags:["清真","特色餐","安静"],stalls:["清真牛肉饭","新疆拌面","特色盖饭","汤锅窗口"],status:"即将打烊",crowd:"空闲",wait:2,openHours:"07:00–20:30",location:"一食堂南侧 · 一层独立入口",route:"从一食堂南门步行约 1 分钟"}
+];
+
+const dishes = [
+  {id:1,name:"贵州辣子鸡",emoji:"🍗",price:12.8,score:4.8,hot:982,canteen:"二食堂",stall:"辣子鸡窗口",type:"rice",spicy:"spicy",tags:["必吃","隐藏"],desc:"香辣但不呛，鸡肉分量足，配米饭很合适。",cal:[480,560],protein:29,carbs:38,fat:27,fiber:3.2,sodium:1180,nutri:["蛋白质较高","热量中高","钠偏高"],pair:"建议搭配一份青菜，饮料优先选择无糖饮品。",tasteScore:4.8,portionScore:4.7,valueScore:4.8,portionLabel:"偏大",availability:"供应中"},
+  {id:2,name:"酸汤牛肉粉",emoji:"🍜",price:10.0,score:4.7,hot:861,canteen:"三食堂",stall:"酸汤粉",type:"noodle",spicy:"light",tags:["必吃","便宜"],desc:"酸香开胃，汤底很有贵州特色，十块左右很能打。",cal:[390,460],protein:21,carbs:62,fat:10,fiber:3.8,sodium:980,nutri:["碳水较充足","蛋白质适中","汤底钠偏高"],pair:"如果汤喝得少一些，可减少部分钠摄入。",tasteScore:4.7,portionScore:4.5,valueScore:4.9,portionLabel:"适中",availability:"供应中"},
+  {id:3,name:"脆皮烤盘饭",emoji:"🍛",price:13.5,score:4.6,hot:799,canteen:"二食堂",stall:"烤盘饭",type:"rice",spicy:"light",tags:["必吃","上新"],desc:"脆皮鸡+蔬菜+米饭，一份就能吃饱。",cal:[520,610],protein:27,carbs:72,fat:20,fiber:4.2,sodium:920,nutri:["饱腹感较强","蛋白质较高","脂肪中等"],pair:"已有米饭和少量蔬菜，可额外搭配清淡汤品。",tasteScore:4.6,portionScore:4.8,valueScore:4.7,portionLabel:"偏大",availability:"供应中"},
+  {id:4,name:"手工水饺",emoji:"🥟",price:9.5,score:4.5,hot:645,canteen:"三食堂",stall:"手工饺子",type:"snack",spicy:"light",tags:["便宜","夜宵"],desc:"现煮现卖，价格友好，晚上饿了很适合。",cal:[360,430],protein:18,carbs:55,fat:12,fiber:2.8,sodium:760,nutri:["热量适中","碳水为主","蔬菜偏少"],pair:"可以搭配紫菜蛋花汤或一份凉拌蔬菜。",tasteScore:4.5,portionScore:4.4,valueScore:4.8,portionLabel:"适中",availability:"供应中"},
+  {id:5,name:"黔味小炒肉",emoji:"🥩",price:14.0,score:4.7,hot:734,canteen:"一食堂",stall:"黔味小炒",type:"rice",spicy:"spicy",tags:["必吃","隐藏"],desc:"锅气足，辣味明显，比较下饭。",cal:[500,590],protein:26,carbs:44,fat:28,fiber:3.5,sodium:1100,nutri:["蛋白质较高","脂肪偏高","口味偏重"],pair:"搭配米饭时建议加一份绿色蔬菜。",tasteScore:4.8,portionScore:4.6,valueScore:4.5,portionLabel:"偏大",availability:"供应中"},
+  {id:6,name:"兰州牛肉面",emoji:"🍝",price:11.0,score:4.4,hot:603,canteen:"一食堂",stall:"兰州面馆",type:"noodle",spicy:"light",tags:["便宜"],desc:"汤清面劲，属于稳定发挥型选手。",cal:[410,480],protein:22,carbs:67,fat:9,fiber:3.1,sodium:890,nutri:["脂肪较低","碳水较充足","蛋白质适中"],pair:"可以加蛋或额外牛肉提升蛋白质。",tasteScore:4.4,portionScore:4.5,valueScore:4.7,portionLabel:"适中",availability:"供应中"},
+  {id:7,name:"清真牛肉饭",emoji:"🍚",price:15.0,score:4.6,hot:566,canteen:"民族餐厅",stall:"清真牛肉饭",type:"rice",spicy:"light",tags:["必吃"],desc:"牛肉给得实在，整体口味温和。",cal:[470,540],protein:30,carbs:63,fat:14,fiber:4.0,sodium:780,nutri:["蛋白质较高","搭配较均衡","口味适中"],pair:"整体较均衡，如果再有一份时蔬会更完整。",tasteScore:4.6,portionScore:4.7,valueScore:4.5,portionLabel:"偏大",availability:"供应中"},
+  {id:8,name:"麻辣烫",emoji:"🍲",price:16.5,score:4.5,hot:911,canteen:"二食堂",stall:"麻辣烫",type:"snack",spicy:"spicy",tags:["夜宵"],desc:"自选称重，夜宵热门窗口，排队通常比较长。",cal:[520,720],protein:24,carbs:54,fat:30,fiber:6.0,sodium:1550,nutri:["食材可自由搭配","钠可能较高","热量波动较大"],pair:"多选蔬菜、豆制品，少选加工丸类并少喝汤。",tasteScore:4.6,portionScore:4.3,valueScore:4.1,portionLabel:"自选",availability:"即将售罄"},
+  {id:9,name:"新疆拌面",emoji:"🍝",price:14.5,score:4.6,hot:498,canteen:"民族餐厅",stall:"新疆拌面",type:"noodle",spicy:"light",tags:["上新"],desc:"酱汁浓郁、面条有嚼劲，份量很大。",cal:[510,600],protein:23,carbs:82,fat:16,fiber:4.5,sodium:940,nutri:["碳水较高","份量充足","蛋白质适中"],pair:"如果当天活动量不大，可以少吃一些面量。",tasteScore:4.6,portionScore:4.9,valueScore:4.4,portionLabel:"很大",availability:"今日售罄"},
+  {id:10,name:"香辣鸡排饭",emoji:"🍱",price:12.0,score:4.3,hot:688,canteen:"一食堂",stall:"川香窗口",type:"rice",spicy:"spicy",tags:["便宜","夜宵"],desc:"鸡排酥脆，适合赶时间的时候快速解决。",cal:[560,650],protein:25,carbs:72,fat:24,fiber:2.6,sodium:1050,nutri:["热量偏高","蛋白质适中","蔬菜偏少"],pair:"搭配一份青菜，并尽量减少额外含糖饮料。",tasteScore:4.3,portionScore:4.4,valueScore:4.7,portionLabel:"适中",availability:"供应中"},
+  {id:11,name:"砂锅米线",emoji:"🍜",price:11.5,score:4.5,hot:721,canteen:"二食堂",stall:"砂锅米线",type:"noodle",spicy:"light",tags:["便宜","夜宵"],desc:"热乎、稳妥，冬天尤其适合。",cal:[400,480],protein:17,carbs:65,fat:12,fiber:3.7,sodium:1020,nutri:["热量适中","汤底钠偏高","蛋白质一般"],pair:"可以加蛋或豆腐，汤不必全部喝完。",tasteScore:4.5,portionScore:4.6,valueScore:4.8,portionLabel:"偏大",availability:"供应中"},
+  {id:12,name:"低脂鸡胸沙拉",emoji:"🥗",price:17.0,score:4.2,hot:412,canteen:"一食堂",stall:"轻食窗口",type:"snack",spicy:"light",tags:["上新"],desc:"适合想吃得清爽一点的时候。",cal:[280,350],protein:31,carbs:24,fat:11,fiber:6.5,sodium:520,nutri:["蛋白质较高","热量较低","蔬菜较丰富"],pair:"如果作为完整正餐，可以搭配玉米、全麦面包等主食。",tasteScore:4.2,portionScore:4.1,valueScore:3.9,portionLabel:"偏小",availability:"供应中"}
+];
+
+const basePosts = [
+  {id:"p1",user:"小杨同学",avatar:"👩‍🎓",time:"12分钟前",title:"二食堂辣子鸡，今天状态在线",content:"12.8 一份，辣度刚好，鸡肉比上周多，建议配一碗米饭。中午 11:50 前去不用排太久。",emoji:"🍗",likes:86,comments:21,dishId:1},
+  {id:"p2",user:"阿哲",avatar:"🧑‍💻",time:"36分钟前",title:"十元以内我愿意一直吃它",content:"三食堂酸汤牛肉粉，酸味很开胃，十块钱解决一顿饭，性价比真的高。",emoji:"🍜",likes:64,comments:16,dishId:2},
+  {id:"p3",user:"小林",avatar:"🧑‍🎓",time:"1小时前",title:"晚上不知道吃什么就去饺子窗口",content:"手工水饺九块多，现煮现卖，蘸料区也挺全。晚自习以后过去刚好。",emoji:"🥟",likes:49,comments:9,dishId:4}
+];
+
+
+const announcements = [
+  {id:"a1",level:"important",category:"食堂",source:"二食堂管理员",icon:"🍱",date:"2026-09-21 18:10",title:"二食堂部分窗口今晚提前结束营业（原型示例）",summary:"一楼部分窗口今晚 20:30 提前结束营业，请需要就餐的同学合理安排时间。",body:"因设备例行维护，二食堂一楼部分窗口今晚计划于 20:30 提前结束营业。\n\n本公告目前为校园觅食产品原型中的演示内容，不代表贵阳学院真实营业安排。正式上线后，食堂营业变更应由认证的食堂管理员发布，并同步影响食堂状态与推荐结果。",action:"canteen",target:2},
+  {id:"a2",level:"important",category:"校园码",source:"校园服务（原型）",icon:"💳",date:"2026-09-21 09:00",title:"本月校园饮食补贴已到账（原型示例）",summary:"本月饮食补贴已模拟发放至校园码账户，可前往校园码页面查看余额和记录。",body:"校园码原型账户已模拟完成本月饮食补贴入账。\n\n正式版本若接入学校真实补贴账户，需要经过学校授权、身份认证和支付安全审核。本页面不会产生真实资金变动。",action:"campusCode"},
+  {id:"a3",level:"normal",category:"食堂",source:"三食堂管理员",icon:"🍜",date:"2026-09-20 16:30",title:"三食堂酸汤窗口新增番茄牛肉粉（原型示例）",summary:"新品进入试售期，同学可以在社区分享口味、份量和性价比评价。",body:"三食堂酸汤窗口新增番茄牛肉粉进入原型试售展示。\n\n后续可以把“新品公告 → 菜品详情 → 学生评价 → 榜单”完整联动，让公告不仅是一条文字消息。",action:"community"},
+  {id:"a4",level:"normal",category:"系统",source:"校园觅食官方",icon:"🛡️",date:"2026-09-21 20:30",title:"校园觅食 Web v1.7.0 PWA Beta 更新说明",summary:"新增公告中心，并重新整理桌面端导航分组。美食社区继续作为核心校园功能保留。",body:"v1.7.0 PWA Beta 更新内容：\n\n1. 保留并强化美食社区；\n2. 新增校园公告中心；\n3. 支持普通、重要、紧急三级公告；\n4. 支持食堂、校园码、跑腿、活动、系统分类；\n5. 新增已读 / 未读状态和首页公告入口；\n6. 公告可联动食堂、校园码、跑腿和版本中心；\n7. 设置中新增公告通知偏好。",action:"version"},
+  {id:"a5",level:"urgent",category:"跑腿",source:"校园觅食跑腿（原型）",icon:"🛵",date:"2026-09-19 17:45",title:"恶劣天气时跑腿时效可能延长（原型示例）",summary:"雨天、强风等情况下，校园跑腿应优先保障人员与食品安全，预计送达时间可能延长。",body:"遇到明显降雨、强风或道路湿滑时，校园跑腿应优先保障学生安全。\n\n未来正式跑腿系统中，这类紧急公告可以同步调整预计配送时长，并允许无责取消部分订单。",action:"services"}
+];
+
+let favorites = JSON.parse(localStorage.getItem("campus_food_favorites")||"[]");
+let userPosts = JSON.parse(localStorage.getItem("campus_food_posts")||"[]");
+let mealRecords = JSON.parse(localStorage.getItem("campus_food_meals")||"[]");
+let crowdReports = JSON.parse(localStorage.getItem("campus_food_crowd")||"{}");
+let experienceRatings = JSON.parse(localStorage.getItem("campus_food_experience")||"{}");
+let dietPrefs = JSON.parse(localStorage.getItem("campus_food_dietprefs")||'{"normal":[],"strict":[]}');
+let userProfile = JSON.parse(localStorage.getItem("campus_food_profile")||'{"nickname":"觅食同学","bio":"今天也要好好吃饭","avatar":""}');
+let userSettings = JSON.parse(localStorage.getItem("campus_food_settings")||'{"schoolOnly":true,"publicMeals":false,"chatNotice":true,"socialNotice":true,"orderNotice":true,"importantAnnouncement":true,"normalAnnouncement":false}');
+userSettings={schoolOnly:true,publicMeals:false,chatNotice:true,socialNotice:true,orderNotice:true,importantAnnouncement:true,normalAnnouncement:false,...userSettings};
+let announcementReads = JSON.parse(localStorage.getItem("campus_food_announcement_reads")||"[]");
+let announcementFilter = "全部";
+let currentPage = "home";
+let currentChat = null;
+let currentRating = 5;
+
+function money(v){ return "¥"+Number(v).toFixed(v%1?1:0) }
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(window.__toast); window.__toast=setTimeout(()=>t.classList.remove("show"),1600)
+}
+function isFav(id){ return favorites.includes(id) }
+function toggleFav(id){
+  if(isFav(id)) favorites=favorites.filter(x=>x!==id); else favorites.push(id);
+  localStorage.setItem("campus_food_favorites",JSON.stringify(favorites));
+  renderMine(); renderRecommendations();
+  toast(isFav(id)?"已收藏":"已取消收藏");
+}
+function openModal(id){ document.getElementById(id).classList.add("show") }
+function closeModal(id){ document.getElementById(id).classList.remove("show") }
+
+function effectiveCrowd(c){ return crowdReports[c.id]?.crowd || c.crowd; }
+function crowdClass(v){ return v==="拥挤"?"warn":(v==="空闲"?"open":""); }
+function statusClass(v){ return v==="营业中"?"open":(v==="即将打烊"?"warn":"closed"); }
+function renderCanteens(){
+  document.getElementById("canteenGrid").innerHTML = canteens.map(c=>{
+    const crowd=effectiveCrowd(c);
+    return `
+    <div class="canteen-card" onclick="showCanteen(${c.id})">
+      <div class="canteen-icon">${c.emoji}</div>
+      <b>${c.name}</b><span>${c.desc}</span><span>${c.floors}</span>
+      <div class="status-row">
+        <span class="status-pill ${statusClass(c.status)}"><i class="crowd-dot"></i>${c.status}</span>
+        <span class="status-pill ${crowdClass(crowd)}"><i class="crowd-dot"></i>${crowd} · 约 ${c.wait} 分钟</span>
+      </div>
+      <div class="location-line">📍 <span>${c.location}</span></div>
+      ${c.specialNotice?`<div class="notice-inline">📢 ${c.specialNotice}</div>`:""}
+      <div class="chips">${c.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div>
+    </div>`}).join("");
+}
+function dishCard(d){
+  const avClass=d.availability==="今日售罄"?"sold":(d.availability==="即将售罄"?"low":"");
+  return `<div class="dish-card" onclick="showDish(${d.id})">
+    <div class="dish-cover">${d.emoji}<span class="dish-badge">${d.tags[0]||"推荐"}</span>
+      <button class="fav-mini" onclick="event.stopPropagation();toggleFav(${d.id})">${isFav(d.id)?"❤️":"🤍"}</button>
+      <span class="availability ${avClass}">${d.availability}</span>
+    </div>
+    <div class="dish-body">
+      <div class="dish-title"><b>${d.name}</b><span class="price">${money(d.price)}</span></div>
+      <div class="meta"><span>${d.canteen} · ${d.stall}</span><span class="stars">★ ${d.score}</span></div>
+      <div class="status-row"><span class="portion-badge">份量 ${d.portionLabel}</span><span class="chip">性价比 ${d.valueScore}</span></div>
+    </div>
+  </div>`
+}
+function renderRecommendations(){
+  document.getElementById("recommendGrid").innerHTML = dishes.slice(0,4).map(dishCard).join("");
+}
+function renderMiniRank(){
+  const sorted=[...dishes].sort((a,b)=>b.score-a.score).slice(0,5);
+  document.getElementById("miniRank").innerHTML = sorted.map((d,i)=>`
+    <div class="mini-rank" onclick="showDish(${d.id})" style="cursor:pointer">
+      <div class="rank-no">${i+1}</div><div style="font-size:28px">${d.emoji}</div>
+      <div class="grow"><b>${d.name}</b><small>${d.canteen} · ${d.stall}</small></div>
+      <span class="stars">★ ${d.score}</span>
+    </div>`).join("");
+}
+function renderCommunityMini(){
+  document.getElementById("communityMini").innerHTML = basePosts.slice(0,2).map(p=>`
+    <div class="post-mini"><div class="avatar">${p.avatar}</div><div><b>${p.title}</b><p>${p.content.slice(0,54)}...</p></div></div>`).join("");
+}
+
+function renderRank(tag="必吃"){
+  const list=dishes.filter(d=>d.tags.includes(tag)).sort((a,b)=>b.score-a.score || b.hot-a.hot);
+  document.getElementById("rankGrid").innerHTML=list.map((d,i)=>`
+    <div class="rank-card" onclick="showDish(${d.id})">
+      <div class="rank-top"><span class="rank-num">#${i+1}</span><span class="stars">★ ${d.score}</span></div>
+      <div class="emoji">${d.emoji}</div>
+      <h4>${d.name}</h4><p>${d.canteen} · ${d.stall}<br>${d.desc}</p>
+      <div class="meta"><span>🔥 ${d.hot} 热度</span><b class="price">${money(d.price)}</b></div>
+    </div>`).join("") || `<div class="panel">当前榜单暂无内容</div>`;
+}
+
+
+function unreadAnnouncements(){
+  return announcements.filter(a=>!announcementReads.includes(a.id));
+}
+function markAnnouncementRead(id){
+  if(!announcementReads.includes(id)){
+    announcementReads.push(id);
+    localStorage.setItem("campus_food_announcement_reads",JSON.stringify(announcementReads));
+  }
+  renderAnnouncements();renderAnnouncementBadges();
+}
+function markAllAnnouncementsRead(){
+  announcementReads=announcements.map(a=>a.id);
+  localStorage.setItem("campus_food_announcement_reads",JSON.stringify(announcementReads));
+  renderAnnouncements();renderAnnouncementBadges();toast("所有公告已标为已读");
+}
+function levelText(level){ return level==="urgent"?"紧急":(level==="important"?"重要":"普通"); }
+function renderAnnouncementBadges(){
+  const unread=unreadAnnouncements().length;
+  const nav=document.getElementById("announcementNavCount");
+  if(nav){nav.textContent=unread;nav.style.display=unread?"inline-flex":"none";}
+  const c=document.getElementById("communityAnnouncementCount");
+  if(c)c.textContent=unread?`(${unread})`:"";
+  const u=document.getElementById("announceUnreadStat");if(u)u.textContent=unread;
+  const imp=document.getElementById("announceImportantStat");if(imp)imp.textContent=announcements.filter(a=>a.level!=="normal").length;
+  const top=unreadAnnouncements().find(a=>a.level==="urgent")||unreadAnnouncements().find(a=>a.level==="important")||unreadAnnouncements()[0]||announcements[0];
+  if(top){
+    const ht=document.getElementById("homeAnnouncementTitle");if(ht)ht.textContent=`${levelText(top.level)} · ${top.title}`;
+    const hm=document.getElementById("homeAnnouncementMeta");if(hm)hm.textContent=`${top.source} · ${top.date}`;
+    const cp=document.getElementById("communityPinnedTitle");if(cp)cp.textContent=top.title;
+  }
+}
+function renderAnnouncements(){
+  const box=document.getElementById("announcementList"); if(!box)return;
+  const list=announcements.filter(a=>announcementFilter==="全部"||a.category===announcementFilter);
+  box.innerHTML=list.map(a=>`
+    <article class="announce-card ${announcementReads.includes(a.id)?"":"unread"}" onclick="openAnnouncement('${a.id}')">
+      <div class="announce-top"><span style="font-size:20px">${a.icon}</span><span class="level-badge ${a.level}">${levelText(a.level)}</span><span class="category-badge">${a.category}</span><span class="announce-source">${a.source}</span></div>
+      <h3>${a.title}</h3><p>${a.summary}</p>
+      <div class="announce-meta"><span>${a.date}</span><span>${announcementReads.includes(a.id)?"已读":"● 未读"}</span></div>
+    </article>`).join("");
+  renderAnnouncementBadges();
+}
+function announcementActionHTML(a){
+  if(a.action==="canteen") return `<button class="primary-btn" onclick="closeModal('announcementModal');showCanteen(${a.target})">查看关联食堂</button>`;
+  if(a.action==="campusCode") return `<button class="primary-btn" onclick="closeModal('announcementModal');openModal('campusCodeModal');renderFakeQR()">打开校园码</button>`;
+  if(a.action==="community") return `<button class="primary-btn" onclick="closeModal('announcementModal');switchPage('community')">去美食社区</button>`;
+  if(a.action==="services") return `<button class="primary-btn" onclick="closeModal('announcementModal');switchPage('services')">查看校园服务</button>`;
+  if(a.action==="version") return `<button class="primary-btn" onclick="closeModal('announcementModal');openModal('versionModal')">查看版本更新</button>`;
+  return "";
+}
+function openAnnouncement(id){
+  const a=announcements.find(x=>x.id===id);if(!a)return;
+  markAnnouncementRead(id);
+  document.getElementById("announcementDetail").innerHTML=`
+    <div class="announce-detail-head">
+      <div class="announce-top"><span style="font-size:22px">${a.icon}</span><span class="level-badge ${a.level}">${levelText(a.level)}</span><span class="category-badge">${a.category}</span></div>
+      <h2>${a.title}</h2><p>${a.source} · ${a.date}</p>
+    </div>
+    <div class="announce-body">${a.body}</div>
+    <div class="announce-action">${announcementActionHTML(a)}<button class="ghost-btn" onclick="closeModal('announcementModal')">关闭</button></div>`;
+  openModal("announcementModal");
+}
+function openTopAnnouncement(){
+  const top=unreadAnnouncements().find(a=>a.level==="urgent")||unreadAnnouncements().find(a=>a.level==="important")||unreadAnnouncements()[0]||announcements[0];
+  if(top)openAnnouncement(top.id);
+}
+
+function renderFeed(){
+  const posts=[...userPosts,...basePosts];
+  document.getElementById("feed").innerHTML=posts.map(p=>`
+    <article class="post-card">
+      <div class="post-head"><div class="avatar">${p.avatar||"🧑‍🎓"}</div>
+        <div class="info"><b>${p.user||"觅食同学"}</b><small>${p.time||"刚刚"}</small></div>
+        <span class="chip">${p.dishId ? (dishes.find(d=>d.id==p.dishId)?.canteen||"校园") : "校园"}</span>
+      </div>
+      <h4>${p.title}</h4><p>${p.content}</p>
+      <div class="post-photo">${p.emoji || (dishes.find(d=>d.id==p.dishId)?.emoji||"🍽️")}</div>
+      <div class="post-footer"><span>♡ ${p.likes||0}</span><span>💬 ${p.comments||0}</span><span>↗ 分享</span></div>
+    </article>`).join("");
+  document.getElementById("postCount").textContent=userPosts.length;
+}
+
+
+const normalDietOptions=["不吃香菜","不吃葱","不吃姜","不吃蒜","不吃辣","少油","少盐","偏清淡","不吃肥肉","不吃动物内脏","不吃牛肉","不吃羊肉","不吃猪肉","素食"];
+const strictDietOptions=["花生","牛奶 / 乳制品","鸡蛋","大豆","坚果","海鲜","甲壳类","芝麻","小麦 / 麸质"];
+
+function toggleDiet(kind,name){
+  const arr=dietPrefs[kind];
+  const i=arr.indexOf(name); if(i>=0) arr.splice(i,1); else arr.push(name);
+  localStorage.setItem("campus_food_dietprefs",JSON.stringify(dietPrefs));
+  renderDietPrefs(); toast(i>=0?`已取消：${name}`:`已选择：${name}`);
+}
+function renderDietPrefs(){
+  const n=document.getElementById("dietNormal"),s=document.getElementById("dietStrict");
+  if(n)n.innerHTML=normalDietOptions.map(x=>`<button class="diet-tag ${dietPrefs.normal.includes(x)?"on":""}" onclick="toggleDiet('normal','${x}')">${x}</button>`).join("");
+  if(s)s.innerHTML=strictDietOptions.map(x=>`<button class="diet-tag strict ${dietPrefs.strict.includes(x)?"on":""}" onclick="toggleDiet('strict','${x}')">${x}</button>`).join("");
+}
+function applyProfile(){
+  const nameEl=document.querySelector("#page-mine .profile-hero h2");
+  const bioEl=document.querySelector("#page-mine .profile-hero p");
+  const av=document.querySelector("#page-mine .profile-avatar");
+  if(nameEl)nameEl.textContent=userProfile.nickname;
+  if(bioEl)bioEl.textContent=userProfile.bio;
+  if(av)av.innerHTML=userProfile.avatar?`<img src="${userProfile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:26px">`:"🧑‍🎓";
+  const pn=document.getElementById("profileNickname"),pb=document.getElementById("profileBio"),pap=document.getElementById("profileAvatarPreview");
+  if(pn)pn.value=userProfile.nickname;if(pb)pb.value=userProfile.bio;
+  if(pap)pap.innerHTML=userProfile.avatar?`<img src="${userProfile.avatar}">`:"🧑‍🎓";
+}
+function renderSettings(){
+  document.querySelectorAll(".switch[data-setting]").forEach(b=>b.classList.toggle("on",!!userSettings[b.dataset.setting]));
+}
+const mapInfo={
+  "一食堂":["一食堂","公开资料显示位于明理楼后面。适合作为从校门方向、教学区前往的主要就餐点之一。"],
+  "二食堂":["二食堂","公开资料描述为“乒乓球场下面”，并且二食堂、三食堂距离梨园小区相对更近。"],
+  "三食堂":["三食堂","公开资料描述为位于二食堂楼下，与二食堂形成相邻就餐区域。"],
+  "民族食堂":["民族食堂","公开资料中也称清真食堂，描述为位于博信楼后面。"],
+  "梨园小区":["梨园小区","学生宿舍一区。公开资料提到其距离二食堂、三食堂较近，生活配套相对集中。"],
+  "竹园小区":["竹园小区","学生宿舍二区。公开资料提到其更靠近体育场与技术教学区域。"],
+  "体育场":["体育场","校园主要运动地标之一，可作为竹园小区一侧的路线参照。"],
+  "图书馆":["图书馆","校园学习地标，可作为前往一食堂与教学区域时的参照点。"]
+};
+function mapSelect(name){
+  const v=mapInfo[name]||[name,"该点位用于校园地图原型。"];
+  document.getElementById("mapPlaceTitle").textContent=v[0];
+  document.getElementById("mapPlaceDesc").textContent=v[1];
+}
+const chats=[
+  {id:1,name:"小杨同学",avatar:"👩‍🎓",last:"二食堂现在人有点多",msgs:[["other","你刚才问辣子鸡吗？今天还不错。"],["me","现在排队长吗？"],["other","二食堂现在人有点多，大概十几分钟。"]]},
+  {id:2,name:"阿哲",avatar:"🧑‍💻",last:"酸汤牛肉粉十块左右",msgs:[["other","我觉得三食堂酸汤粉性价比挺高。"]]},
+  {id:3,name:"跑腿小周",avatar:"🛵",last:"订单送到宿舍楼下",msgs:[["other","后面跑腿订单可以直接在聊天里共享。"]]}
+];
+
+function showCommunityTab(tab){
+  document.querySelectorAll(".community-tab[data-community-tab]").forEach(b=>b.classList.toggle("active",b.dataset.communityTab===tab));
+  const feed=document.getElementById("community-feed-view");
+  const chat=document.getElementById("community-chat-view");
+  if(feed)feed.classList.toggle("active",tab==="feed");
+  if(chat)chat.classList.toggle("active",tab==="chat");
+  if(tab==="chat")renderChats();
+}
+
+function renderChats(){
+  const l=document.getElementById("chatList"); if(!l)return;
+  l.innerHTML=chats.map(c=>`<div class="chat-person ${currentChat===c.id?"active":""}" onclick="openChat(${c.id})"><div class="avatar">${c.avatar}</div><div class="grow"><b>${c.name}</b><small>${c.last}</small></div></div>`).join("");
+}
+function openChat(id){
+  currentChat=id;const c=chats.find(x=>x.id===id);renderChats();
+  document.getElementById("chatHead").textContent=c.name+" · 同校聊天原型";
+  document.getElementById("chatMessages").innerHTML=c.msgs.map(m=>`<div class="msg ${m[0]==="me"?"me":""}">${m[1]}</div>`).join("");
+}
+function sendChat(){
+  if(!currentChat){toast("先选择一位同学");return}
+  const inp=document.getElementById("chatInput"),v=inp.value.trim();if(!v)return;
+  const c=chats.find(x=>x.id===currentChat);c.msgs.push(["me",v]);c.last=v;inp.value="";openChat(currentChat);
+}
+function renderFakeQR(){
+  const q=document.getElementById("fakeQR"); if(!q||q.children.length)return;
+  const pattern=[1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,0,1,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,0,1,0,0,1,1,1,1,0,1,0,1,1,1];
+  q.innerHTML=pattern.map(x=>`<i class="${x?"on":""}"></i>`).join("");
+}
+function updateDeliveryFees(){
+  const sel=document.getElementById("deliveryDish");if(!sel)return;
+  const d=dishes.find(x=>x.id===Number(sel.value))||dishes[0];
+  const member=document.getElementById("deliveryMember").checked;
+  const runner=member?1:2.5,platform=.3,discount=member?1.5:0,total=d.price+runner+platform;
+  document.getElementById("feeFood").textContent=money(d.price);
+  document.getElementById("feeRunner").textContent=money(runner);
+  document.getElementById("feePlatform").textContent=money(platform);
+  document.getElementById("feeDiscount").textContent=member?"会员已享低跑腿费":"-¥0";
+  document.getElementById("feeTotal").textContent=money(total);
+}
+
+function renderMine(){
+  document.getElementById("favCount").textContent=favorites.length;
+  renderDietPrefs();applyProfile();renderSettings();
+  const list=dishes.filter(d=>favorites.includes(d.id));
+  document.getElementById("favList").innerHTML=list.length?list.map(d=>`
+    <div class="fav-row" onclick="showDish(${d.id})" style="cursor:pointer">
+      <span class="emoji">${d.emoji}</span><div class="grow"><b>${d.name}</b><small>${d.canteen} · ${money(d.price)}</small></div><span>›</span>
+    </div>`).join(""):`<div class="empty-note">还没有收藏菜品，去首页逛逛吧。</div>`;
+}
+
+
+function startOfWeek(d=new Date()){
+  const x=new Date(d); const day=(x.getDay()+6)%7;
+  x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x;
+}
+function expenseStats(){
+  const now=new Date(), todayStr=now.toDateString(), weekStart=startOfWeek(now);
+  const month=now.getMonth(), year=now.getFullYear();
+  let today=0,week=0,monthSum=0,total=0,count=0;
+  const ccount={};
+  mealRecords.forEach(r=>{
+    const d=dishes.find(x=>x.id===r.dishId); if(!d)return;
+    const t=new Date(r.time); total+=d.price; count++;
+    if(t.toDateString()===todayStr) today+=d.price;
+    if(t>=weekStart && t<=now) week+=d.price;
+    if(t.getMonth()===month && t.getFullYear()===year) monthSum+=d.price;
+    ccount[d.canteen]=(ccount[d.canteen]||0)+1;
+  });
+  const fav=Object.entries(ccount).sort((a,b)=>b[1]-a[1])[0]?.[0]||"暂无";
+  return {today,week,month:monthSum,avg:count?total/count:0,fav};
+}
+function renderExpenses(){
+  const s=expenseStats();
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
+  set("todaySpend",money(s.today));set("weekSpend",money(s.week));set("monthSpend",money(s.month));
+  set("avgMealSpend",money(s.avg));set("favCanteen",s.fav);set("homeSpend",money(s.today));
+  const box=document.getElementById("expenseList");
+  if(box){
+    box.innerHTML=mealRecords.length?mealRecords.slice(0,10).map(r=>{
+      const d=dishes.find(x=>x.id===r.dishId);if(!d)return "";
+      const t=new Date(r.time);
+      return `<div class="expense-row"><span style="font-size:26px">${d.emoji}</span><div class="grow"><b>${d.name}</b><small>${t.toLocaleDateString("zh-CN")} ${t.toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})} · ${d.canteen}</small></div><span class="amt">${money(d.price)}</span></div>`;
+    }).join(""):`<div class="empty-note">还没有饮食消费记录。记录“我吃了”后，这里会自动出现对应价格。</div>`;
+  }
+}
+function reportCrowd(id,crowd){
+  crowdReports[id]={crowd,time:new Date().toISOString()};
+  localStorage.setItem("campus_food_crowd",JSON.stringify(crowdReports));
+  renderCanteens();showCanteen(id);toast(`已提交：当前${crowd}`);
+}
+function setExperience(id,dim,val){
+  if(!experienceRatings[id]) experienceRatings[id]={taste:0,portion:0,value:0};
+  experienceRatings[id][dim]=val;
+  localStorage.setItem("campus_food_experience",JSON.stringify(experienceRatings));
+  showDish(id);
+}
+function submitExperience(id){
+  const r=experienceRatings[id]||{};
+  if(!r.taste||!r.portion||!r.value){toast("请先完成口味、份量、性价比三个评分");return}
+  toast("体验评价已保存到本地（原型演示）");
+}
+
+
+function mealLabelByHour(h){
+  if(h<10) return "早餐";
+  if(h<14) return "午餐";
+  if(h<17) return "加餐";
+  if(h<22) return "晚餐";
+  return "夜宵";
+}
+function eatDish(id){
+  const d=dishes.find(x=>x.id===id); if(!d)return;
+  if(d.availability==="今日售罄"){toast("这道菜当前标记为今日售罄，暂不能记录为本次就餐");return}
+  const now=new Date();
+  const rec={id:"m"+Date.now(),dishId:id,time:now.toISOString(),meal:mealLabelByHour(now.getHours())};
+  mealRecords.unshift(rec);
+  localStorage.setItem("campus_food_meals",JSON.stringify(mealRecords));
+  renderNutrition();renderExpenses();renderMine();
+  toast(`已记录${rec.meal}：${d.name} · ${money(d.price)}`);
+}
+function todayRecords(){
+  const today=new Date().toDateString();
+  return mealRecords.filter(r=>new Date(r.time).toDateString()===today);
+}
+function nutritionTotals(){
+  const recs=todayRecords();
+  return recs.reduce((a,r)=>{
+    const d=dishes.find(x=>x.id===r.dishId); if(!d)return a;
+    a.cal += Math.round((d.cal[0]+d.cal[1])/2);
+    a.protein += d.protein;a.carbs+=d.carbs;a.fat+=d.fat;
+    return a;
+  },{cal:0,protein:0,carbs:0,fat:0});
+}
+function renderNutrition(){
+  const totals=nutritionTotals();
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
+  set("todayCalories",totals.cal);set("todayProtein",totals.protein+" g");set("todayCarbs",totals.carbs+" g");set("todayFat",totals.fat+" g");
+  set("homeCalories",totals.cal+" kcal");set("homeProtein",totals.protein+" g");
+  const recs=todayRecords();
+  const mealList=document.getElementById("mealList");
+  if(mealList){
+    mealList.innerHTML=recs.length?recs.map(r=>{
+      const d=dishes.find(x=>x.id===r.dishId); if(!d)return "";
+      const kcal=Math.round((d.cal[0]+d.cal[1])/2);
+      const t=new Date(r.time).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
+      return `<div class="meal-row"><span class="meal-emoji">${d.emoji}</span><div class="grow"><b>${r.meal} · ${d.name}</b><small>${t} · 约 ${kcal} kcal</small></div><button class="link-btn" onclick="removeMeal('${r.id}')">删除</button></div>`;
+    }).join(""):`<div class="empty-note">今天还没有记录饮食。打开任意菜品详情，点击“🍽 我吃了”即可加入。</div>`;
+  }
+  const sug=document.getElementById("nutritionSuggestion");
+  if(sug){
+    if(!recs.length) sug.innerHTML=`今天还没有记录。你可以先去 <button class="link-btn" onclick="switchPage('random')">随机干饭</button> 选一餐，吃完后再记录。`;
+    else if(totals.protein<45) sug.innerHTML=`今天已记录的蛋白质大约 <b>${totals.protein} g</b>。下一餐可以考虑牛肉饭、鸡胸沙拉、鸡蛋或豆制品等蛋白质更丰富的搭配。`;
+    else if(totals.fat>55) sug.innerHTML=`今天已记录的菜品中脂肪相对较高。下一餐可以考虑清汤粉面、蔬菜和较清淡的蛋白质来源。`;
+    else sug.innerHTML=`目前记录看起来比较均衡。下一餐仍可以按自己的食欲和活动量选择，优先保证主食、蛋白质和蔬菜都有一些。`;
+  }
+}
+function removeMeal(id){
+  mealRecords=mealRecords.filter(r=>r.id!==id);
+  localStorage.setItem("campus_food_meals",JSON.stringify(mealRecords));
+  renderNutrition();renderExpenses();renderMine();toast("已删除这条饮食记录");
+}
+
+function showDish(id){
+  const d=dishes.find(x=>x.id===id); if(!d)return;
+  const avgCal=Math.round((d.cal[0]+d.cal[1])/2);
+  const myr=experienceRatings[d.id]||{taste:0,portion:0,value:0};
+  const metric=(label,val)=>`<div class="metric-card"><span>${label}</span><b>${val.toFixed(1)}</b><em>/ 5</em><div class="metric-bar"><i style="width:${val/5*100}%"></i></div></div>`;
+  const dots=(dim)=>[1,2,3,4,5].map(v=>`<button class="rate-dot ${myr[dim]===v?"on":""}" onclick="setExperience(${d.id},'${dim}',${v})">${v}</button>`).join("");
+  document.getElementById("dishDetail").innerHTML=`
+    <div class="detail-hero" style="position:relative">${d.emoji}
+      <span class="availability ${d.availability==="今日售罄"?"sold":(d.availability==="即将售罄"?"low":"")}" style="right:16px;bottom:14px">${d.availability}</span>
+    </div>
+    <div class="detail-info">
+      <div><h2>${d.name}</h2><p>${d.canteen} · ${d.stall}<br>${d.desc}</p>
+        <div class="chips">${d.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div></div>
+      <div style="text-align:right"><div class="price" style="font-size:25px">${money(d.price)}</div><div class="stars" style="margin-top:6px">★ ${d.score} · ${d.hot} 热度</div></div>
+    </div>
+
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)">
+      <div class="section-head" style="margin-bottom:4px"><div><h3>同学们怎么评价这份菜？</h3><p>总分之外，再看口味、份量和性价比。</p></div><span class="portion-badge">份量 ${d.portionLabel}</span></div>
+      <div class="metric-grid">${metric("口味",d.tasteScore)}${metric("份量",d.portionScore)}${metric("性价比",d.valueScore)}</div>
+      <div class="rate-editor">
+        <b style="font-size:12px">我也来评一下</b><span class="tiny-note"> · 当前原型保存在本机浏览器</span>
+        <div class="rate-line"><span>口味</span>${dots("taste")}</div>
+        <div class="rate-line"><span>份量</span>${dots("portion")}</div>
+        <div class="rate-line"><span>性价比</span>${dots("value")}</div>
+        <button class="ghost-btn" style="margin-top:10px" onclick="submitExperience(${d.id})">提交体验评价</button>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
+      <div class="section-head" style="margin-bottom:8px">
+        <div><h3>营养参考 <span class="chip" style="vertical-align:2px">估算值</span></h3><p>不把食物简单分成“健康/不健康”，而是展示这一餐的营养特点。</p></div>
+      </div>
+      <div class="nutri-card-grid">
+        <div class="nutri-card"><div class="ni">🔥</div><b>${d.cal[0]}–${d.cal[1]}</b><span>kcal / 每份约</span></div>
+        <div class="nutri-card"><div class="ni">🥩</div><b>${d.protein} g</b><span>蛋白质</span></div>
+        <div class="nutri-card"><div class="ni">🍚</div><b>${d.carbs} g</b><span>碳水化合物</span></div>
+        <div class="nutri-card"><div class="ni">🥑</div><b>${d.fat} g</b><span>脂肪</span></div>
+      </div>
+      <div class="nutrition-note">完整参考：膳食纤维约 ${d.fiber} g · 钠约 ${d.sodium} mg。校园食堂实际份量与烹饪方式会变化，因此这里采用区间与估算值展示。</div>
+      <h4 style="margin:14px 0 7px">这一餐怎么看？</h4>
+      <div class="nutri-feature">${d.nutri.map((x,i)=>`<span class="feature-tag ${i>0&&x.includes("偏")?"warn":""}">${x}</span>`).join("")}</div>
+      <div style="background:#F5FAF4;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.7;color:#536450"><b>搭配建议：</b>${d.pair}</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="primary-btn" ${d.availability==="今日售罄"?"disabled style='opacity:.48;cursor:not-allowed'":""} onclick="eatDish(${d.id});${d.availability==="今日售罄"?"":"closeModal('dishModal')"}">🍽 ${d.availability==="今日售罄"?"今日售罄":"我吃了 · "+money(d.price)+" · 约 "+avgCal+" kcal"}</button>
+      <button class="ghost-btn" onclick="toggleFav(${d.id});showDish(${d.id})">${isFav(d.id)?"❤️ 已收藏":"🤍 收藏"}</button>
+      <button class="ghost-btn" onclick="switchPage('random');closeModal('dishModal')">🎲 再帮我随机一个</button>
+    </div>
+    <div class="review-list">
+      <h3>同学评价</h3>
+      <div class="review"><b>小陈同学 · ★★★★★</b><p>份量不错，价格也能接受，最近状态挺稳定。</p></div>
+      <div class="review"><b>阿明 · ★★★★☆</b><p>饭点排队有一点久，建议错峰。</p></div>
+      <div class="review"><b>我也来打分</b><div class="rating-row">${[1,2,3,4,5].map(i=>`<span class="star-rate ${i<=currentRating?"on":""}" onclick="setRating(${i},${d.id})">★</span>`).join("")}</div>
+      <button class="ghost-btn" onclick="toast('评分已记录（演示）')">提交总评分</button></div>
+    </div>`;
+  openModal("dishModal");
+}
+function setRating(v,id){ currentRating=v; showDish(id) }
+
+function showCanteen(id){
+  const c=canteens.find(x=>x.id===id);
+  const related=dishes.filter(d=>d.canteen===c.name);
+  const crowd=effectiveCrowd(c);
+  const rpt=crowdReports[id];
+  document.getElementById("canteenTitle").textContent=c.name;
+  document.getElementById("canteenDetail").innerHTML=`
+    <div class="profile-hero" style="padding:18px">
+      <div class="profile-avatar">${c.emoji}</div>
+      <div style="flex:1"><h2>${c.name}</h2><p>${c.desc}<br>${c.floors}</p>
+        <div class="status-row"><span class="status-pill ${statusClass(c.status)}"><i class="crowd-dot"></i>${c.status}</span><span class="status-pill ${crowdClass(crowd)}"><i class="crowd-dot"></i>${crowd} · 预计 ${c.wait} 分钟</span></div>
+      </div>
+    </div>
+    ${c.specialNotice?`<div class="notice-inline">📢 ${c.specialNotice} · <button class="link-btn" onclick="openAnnouncement('a1')">查看公告</button></div>`:""}
+    <div class="home-split" style="margin-top:14px">
+      <div class="panel" style="padding:15px">
+        <b>📍 在哪里？</b><p style="color:var(--sub);font-size:12px;line-height:1.7;margin-bottom:4px">${c.location}<br>${c.route}</p>
+      </div>
+      <div class="panel" style="padding:15px">
+        <b>🕒 营业时间</b><p style="color:var(--sub);font-size:12px;line-height:1.7;margin-bottom:4px">${c.openHours}<br>当前：${c.status}</p>
+      </div>
+    </div>
+    <div class="live-strip">
+      <div><b>现在排队怎么样？</b><br><span>${rpt?"你最近提交过一次状态反馈":"当前为原型示例数据，可点击模拟学生反馈"}</span></div>
+      <div class="report-group">
+        <button class="report-btn" onclick="reportCrowd(${c.id},'空闲')">🟢 空闲</button>
+        <button class="report-btn" onclick="reportCrowd(${c.id},'一般')">🟡 一般</button>
+        <button class="report-btn" onclick="reportCrowd(${c.id},'拥挤')">🟠 拥挤</button>
+      </div>
+    </div>
+    <h3>窗口</h3><div class="canteen-list">${c.stalls.map(s=>`<div class="stall-box"><b>${s}</b><span>${related.filter(d=>d.stall===s).length||1} 个推荐菜品</span></div>`).join("")}</div>
+    <h3 style="margin-top:20px">今日菜品状态</h3>
+    <div class="dish-grid" style="grid-template-columns:repeat(2,1fr)">${related.map(dishCard).join("")}</div>
+    <div class="nutrition-note" style="margin-top:12px">营业、排队、供应状态目前均为网页版原型演示数据；正式上线后应接入管理员维护或学生实时反馈，并标明更新时间。</div>`;
+  openModal("canteenModal");
+}
+
+function switchPage(page){
+  currentPage=page;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  const map={
+    home:["晚上好，今天想吃点什么？","发现校园里的好味道，也看看同学们最近都在吃什么。"],
+    rank:["校园榜单","从本周必吃到夜宵榜，先看看大家都在投票给谁。"],
+    random:["随机干饭","别纠结了，设置一下条件，让它帮你决定。"],
+    map:["校园地图","用食堂、宿舍、教学楼和道路索引把“去哪吃”也纳入推荐。"],
+    nutrition:["营养助手","不只是告诉你什么好吃，也告诉你这一餐大概吃进了什么。"],
+    community:["社区","社区动态、同学私聊和校园美食交流都集中在这里。"],
+    announcements:["校园公告","学校、食堂与平台的正式信息集中展示，并与相关功能联动。"],
+    services:["校园服务","校园码、跑腿、会员与学校系统接口的原型框架。"],
+    mine:["我的觅食","保留收藏、忌口、校园饭堂账本、校园码与个人资料等原有功能。"],
+    settings:["设置","集中管理个人资料、隐私、通知、账号安全与软件设置。"]
+  };
+  document.getElementById("pageTitle").textContent=map[page][0];
+  document.getElementById("pageSub").textContent=map[page][1];
+  if(page==="community"){renderFeed();renderChats();}
+  if(page==="announcements")renderAnnouncements();
+  if(page==="nutrition")renderNutrition();
+  if(page==="services")updateDeliveryFees();
+  if(page==="mine"){renderMine();renderExpenses();}
+  if(page==="settings"){renderSettings();applyProfile();}
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>switchPage(b.dataset.page)));
+document.querySelectorAll("[data-jump]").forEach(b=>b.addEventListener("click",()=>switchPage(b.dataset.jump)));
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m.id)}));
+
+
+document.querySelectorAll("#announcementFilters .announce-filter").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#announcementFilters .announce-filter").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");announcementFilter=b.dataset.annFilter;renderAnnouncements();
+}));
+document.getElementById("markAllAnnouncements").addEventListener("click",markAllAnnouncementsRead);
+
+document.querySelectorAll("#rankFilters .pill").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#rankFilters .pill").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderRank(b.dataset.rank)
+}));
+
+const selections={budget:"all",spicy:"all",type:"all",nutrition:"all"};
+document.querySelectorAll(".option-group").forEach(g=>g.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+  g.querySelectorAll(".opt").forEach(x=>x.classList.remove("active"));b.classList.add("active");selections[g.dataset.group]=b.dataset.value;
+})));
+
+function randomDish(){
+  let list=dishes.filter(d=>{
+    if(d.availability==="今日售罄") return false;
+    const budget=selections.budget==="all"||d.price<=Number(selections.budget);
+    const spicy=selections.spicy==="all"||d.spicy===selections.spicy;
+    const type=selections.type==="all"||d.type===selections.type;
+    const nutrition=selections.nutrition==="all"
+      || (selections.nutrition==="protein" && d.protein>=26)
+      || (selections.nutrition==="calorie" && ((d.cal[0]+d.cal[1])/2)<=450)
+      || (selections.nutrition==="light" && d.spicy==="light" && d.fat<=16);
+    return budget&&spicy&&type&&nutrition;
+  });
+  if(!list.length){toast("没有找到符合条件的菜品，放宽一点条件试试");return}
+  const d=list[Math.floor(Math.random()*list.length)];
+  document.getElementById("randEmpty").style.display="none";
+  const card=document.getElementById("resultCard");
+  card.className="result-card show";
+  card.innerHTML=`<div class="result-emoji">${d.emoji}</div><h3>${d.name}</h3>
+    <p>${d.canteen} · ${d.stall}<br>${d.desc}</p>
+    <div class="meta" style="font-size:14px;margin-bottom:8px"><span class="stars">★ ${d.score}</span><b class="price">${money(d.price)}</b></div>
+    <div class="nutrition-note" style="margin-bottom:9px">🔥 约 ${Math.round((d.cal[0]+d.cal[1])/2)} kcal · 🥩 ${d.protein}g 蛋白质</div>
+    <div class="status-row" style="margin-bottom:14px"><span class="portion-badge">份量 ${d.portionLabel}</span><span class="chip">性价比 ${d.valueScore}</span><span class="chip">${d.availability}</span></div>
+    <div class="result-actions"><button class="primary-btn" style="flex:1" onclick="showDish(${d.id})">就吃它</button>
+    <button class="ghost-btn" style="flex:1" onclick="randomDish()">换一个</button></div>`;
+}
+document.getElementById("randomBtn").addEventListener("click",randomDish);
+
+function openPublish(){
+  document.getElementById("postDish").innerHTML=`<option value="">不关联具体菜品</option>`+dishes.map(d=>`<option value="${d.id}">${d.name} · ${d.canteen}</option>`).join("");
+  openModal("publishModal");
+}
+document.getElementById("publishTop").addEventListener("click",openPublish);
+document.getElementById("publishSide").addEventListener("click",openPublish);
+document.getElementById("submitPost").addEventListener("click",()=>{
+  const title=document.getElementById("postTitle").value.trim(),content=document.getElementById("postContent").value.trim();
+  const dishId=Number(document.getElementById("postDish").value)||null;
+  if(!title||!content){toast("标题和正文都要写一点");return}
+  userPosts.unshift({id:"u"+Date.now(),user:"觅食同学",avatar:"🧑‍🎓",time:"刚刚",title,content,emoji:dishId?(dishes.find(d=>d.id===dishId)?.emoji):"🍽️",likes:0,comments:0,dishId});
+  localStorage.setItem("campus_food_posts",JSON.stringify(userPosts));
+  document.getElementById("postTitle").value="";document.getElementById("postContent").value="";
+  closeModal("publishModal");renderFeed();renderMine();switchPage("community");toast("发布成功");
+});
+
+document.getElementById("clearData").addEventListener("click",()=>{
+  favorites=[];userPosts=[];mealRecords=[];crowdReports={};experienceRatings={};dietPrefs={normal:[],strict:[]};
+  localStorage.removeItem("campus_food_favorites");localStorage.removeItem("campus_food_posts");localStorage.removeItem("campus_food_meals");
+  localStorage.removeItem("campus_food_crowd");localStorage.removeItem("campus_food_experience");localStorage.removeItem("campus_food_dietprefs");localStorage.removeItem("campus_food_announcement_reads");announcementReads=[];
+  renderMine();renderFeed();renderRecommendations();renderNutrition();renderExpenses();renderCanteens();toast("本地数据已清除");
+});
+
+function doSearch(){
+  const q=document.getElementById("globalSearch").value.trim();
+  if(!q){toast("输入菜名、食堂或窗口");return}
+  const result=dishes.find(d=>[d.name,d.canteen,d.stall,...d.tags].some(x=>String(x).includes(q)));
+  if(result) showDish(result.id); else toast("暂时没有找到相关菜品");
+}
+document.getElementById("searchBtn").addEventListener("click",doSearch);
+document.getElementById("globalSearch").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
+document.getElementById("viewAllCanteens").addEventListener("click",()=>toast("当前已展示全部 4 个示例食堂"));
+document.getElementById("sideVersion").addEventListener("click",()=>openModal("versionModal"));
+document.getElementById("mineVersion").addEventListener("click",()=>openModal("versionModal"));
+document.getElementById("chatSend").addEventListener("click",sendChat);
+document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
+document.getElementById("avatarFile").addEventListener("change",e=>{
+  const f=e.target.files?.[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{userProfile.avatar=r.result;applyProfile()};r.readAsDataURL(f);
+});
+document.getElementById("saveProfile").addEventListener("click",()=>{
+  userProfile.nickname=document.getElementById("profileNickname").value.trim()||"觅食同学";
+  userProfile.bio=document.getElementById("profileBio").value.trim()||"今天也要好好吃饭";
+  localStorage.setItem("campus_food_profile",JSON.stringify(userProfile));applyProfile();closeModal("profileModal");toast("个人资料已保存");
+});
+document.querySelectorAll(".switch[data-setting]").forEach(b=>b.addEventListener("click",()=>{
+  const k=b.dataset.setting;userSettings[k]=!userSettings[k];localStorage.setItem("campus_food_settings",JSON.stringify(userSettings));renderSettings()
+}));
+document.querySelectorAll(".mini-tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".mini-tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  document.querySelectorAll(".service-section").forEach(x=>x.classList.remove("active"));
+  document.getElementById("service-"+b.dataset.serviceTab).classList.add("active");
+  if(b.dataset.serviceTab==="delivery")updateDeliveryFees();
+}));
+document.getElementById("deliveryDish").addEventListener("change",updateDeliveryFees);
+document.getElementById("deliveryMember").addEventListener("change",updateDeliveryFees);
+document.getElementById("simulateOrder").addEventListener("click",()=>toast("原型订单已提交（未产生真实支付或配送）"));
+document.getElementById("campusCodeModal").addEventListener("click",()=>setTimeout(renderFakeQR,0));
+
+renderCanteens();renderRecommendations();renderMiniRank();renderCommunityMini();renderRank();renderFeed();renderMine();renderNutrition();renderExpenses();renderChats();renderFakeQR();updateDeliveryFees();renderAnnouncements();renderAnnouncementBadges();
+</script>
+
+<div class="pwa-install-bar" id="pwaInstallBar">
+  <div class="pwa-icon">🍜</div>
+  <div class="grow"><b id="pwaInstallTitle">安装“校园觅食”</b><small id="pwaInstallHint">安装后可从桌面直接打开，并支持基础离线访问。</small></div>
+  <button class="pwa-install" id="pwaInstallBtn">安装</button>
+  <button class="pwa-dismiss" id="pwaDismissBtn">稍后</button>
+</div>
+<div class="offline-toast" id="offlineToast">当前处于离线状态，部分在线功能可能不可用</div>
+
+
+<script>
+let deferredInstallPrompt=null;
+const pwaBar=document.getElementById("pwaInstallBar");
+const isStandalone=window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(!isStandalone&&localStorage.getItem("campus_food_install_dismissed")!=="1")pwaBar?.classList.add("show")});
+if(isIOS&&!isStandalone&&localStorage.getItem("campus_food_install_dismissed")!=="1"){
+  setTimeout(()=>{document.getElementById("pwaInstallTitle").textContent="添加校园觅食到主屏幕";document.getElementById("pwaInstallHint").textContent="Safari：点“分享” → “添加到主屏幕”";document.getElementById("pwaInstallBtn").textContent="知道了";pwaBar?.classList.add("show")},800);
+}
+document.getElementById("pwaInstallBtn")?.addEventListener("click",async()=>{
+  if(isIOS&&!deferredInstallPrompt){pwaBar?.classList.remove("show");return}
+  if(!deferredInstallPrompt){if(typeof toast==="function")toast("请使用浏览器菜单中的“安装应用 / 添加到主屏幕”");return}
+  deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;pwaBar?.classList.remove("show");
+});
+document.getElementById("pwaDismissBtn")?.addEventListener("click",()=>{localStorage.setItem("campus_food_install_dismissed","1");pwaBar?.classList.remove("show")});
+window.addEventListener("appinstalled",()=>{pwaBar?.classList.remove("show");if(typeof toast==="function")toast("校园觅食已安装")});
+function updateOfflineState(){document.getElementById("offlineToast")?.classList.toggle("show",!navigator.onLine)}
+window.addEventListener("online",updateOfflineState);window.addEventListener("offline",updateOfflineState);updateOfflineState();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(err=>console.warn("Service Worker registration failed",err)))}
+window.addEventListener("load",()=>{const hash=(location.hash||"").replace("#","");if(["home","rank","random","map","nutrition","community","announcements","services","mine","settings"].includes(hash)){try{switchPage(hash)}catch(e){}}});
+</script>
+
+</body>
+</html>
